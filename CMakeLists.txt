@@ -40,3 +40,7 @@ set_target_properties(WifeyMOOCEditor PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
+# Copy resources to build directory
+configure_file(${CMAKE_SOURCE_DIR}/README.md ${CMAKE_BINARY_DIR} COPYONLY)
+install(TARGETS WifeyMOOCEditor DESTINATION bin)
