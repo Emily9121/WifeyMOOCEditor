@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Wifey MOOC Editor
+Comment=An interactive French learning MOOC app
+Exec=WifeyMOOCEditor %f
+Icon=wifeymoocedit
+Terminal=false
+Categories=Education;Languages;Qt;
+StartupNotify=false
