@@ -1,0 +1,68 @@
+[
+  {
+    "type": "list_pick",
+    "question": "Which of these are adorable animals? Pick all that apply! 💖",
+    "options": [
+      "Fluffy kittens",
+      "Cute puppies",
+      "Grumpy spiders",
+      "Baby pandas",
+      "Sweet bunnies"
+    ],
+    "answer": [0, 1, 3, 4],
+    "media": null
+  },
+  {
+    "type": "mcq_single",
+    "question": "What is the cutest color in the world? 💕",
+    "options": [
+      "Hot Pink",
+      "Navy Blue",
+      "Dark Brown",
+      "Bright Green"
+    ],
+    "answer": [0],
+    "media": {
+      "image": "colors.jpg"
+    }
+  },
+  {
+    "type": "mcq_multiple",
+    "question": "Which of these make you feel happy? Check all that apply! 😊",
+    "options": [
+      "Sunshine and rainbows",
+      "Cute animal videos",
+      "Rainy Monday mornings",
+      "Delicious ice cream",
+      "Surprise hugs"
+    ],
+    "answer": [0, 1, 3, 4],
+    "media": null
+  },
+  {
+    "type": "word_fill",
+    "question": "Fill in the blanks to complete this sweet sentence! 💝",
+    "sentence_parts": [
+      "Love is like a ",
+      " that grows more ",
+      " every day with care and ",
+      "."
+    ],
+    "answers": [
+      "flower",
+      "beautiful",
+      "kindness"
+    ],
+    "media": null
+  },
+  {
+    "type": "unknown_example",
+    "question": "This is an example of an unknown question type that the editor can handle gracefully!",
+    "custom_field": "This field is not recognized but will be preserved",
+    "special_data": {
+      "nested": "data",
+      "will": "be kept"
+    },
+    "media": null
+  }
+]
