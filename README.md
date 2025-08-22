@@ -158,13 +158,7 @@ All question types from the original Python version are fully supported:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Follow the existing code style
-4. Add appropriate comments and documentation
-5. Test thoroughly
-6. Submit a pull request
+This is an entirely AI generated project, go instead help a real thing with like, real devs, I wouldn't even know how to merge it lol.
 
 ## 📄 License
 
