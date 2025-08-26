@@ -1,22 +1,41 @@
-// =======================================================================
-// editors/matchphraseseditor.h
-// =======================================================================
-#ifndef MATCHPHRASESEDITOR_H
-#define MATCHPHRASESEDITOR_H
+/*
+ * File: matchsentenceeditor.h
+ * Author: Emily
+ *
+ * Description:
+ * The header file for our lovely sentence-matching editor!
+ * I've given it its own special purse (a QJsonObject member variable)
+ * and all the right names so it's not confused anymore! <3
+ */
+
+#ifndef MATCHSENTENCEEDITOR_H
+#define MATCHSENTENCEEDITOR_H
+
 #include "../basequestioneditor.h"
-#include <vector>
-class QLineEdit; class QTextEdit; class QGroupBox; class QVBoxLayout; class QComboBox;
-class MatchPhrasesEditor : public BaseQuestionEditor {
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QJsonObject> // The header for our purse!
+
+class MatchSentenceEditor : public BaseQuestionEditor
+{
     Q_OBJECT
 public:
-    explicit MatchPhrasesEditor(QWidget* parent = nullptr);
-    void loadJson(const QJsonObject& question) override;
+    explicit MatchSentenceEditor(QWidget *parent = nullptr);
+
+    void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
-private slots:
-    void addPair(); void refreshPairsUI();
+
 private:
-    struct PairWidgets { QWidget* container; QLineEdit* sourceEdit; QLineEdit* targetsEdit; QComboBox* answerCombo; };
-    QTextEdit* m_questionTextEdit; QGroupBox* m_pairsGroup; QVBoxLayout* m_pairsLayout;
-    std::vector<PairWidgets> m_pairWidgets;
+    // Helper functions to keep the UI beautiful!
+    void refreshSentencesUI();
+    void addSentence();
+
+    // UI Elements
+    QTextEdit* m_questionTextEdit;
+    QVBoxLayout* m_sentencesLayout;
+
+    // The brand new purse for our sentence editor!
+    QJsonObject m_currentQuestion;
 };
-#endif // MATCHPHRASESEDITOR_H
+
+#endif // MATCHSENTENCEEDITOR_H

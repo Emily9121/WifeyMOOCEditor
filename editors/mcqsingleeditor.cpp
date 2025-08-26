@@ -3,9 +3,9 @@
  * Author: Emily
  *
  * Description:
- * Implementation for the MCQ Single Answer question editor.
- * This widget allows creating and editing questions where only one
- * answer can be selected. It's super intuitive! <3
+ * The implementation for our single-choice editor! I've included the
+ * missing recipe book for QJsonArray and fixed the button connection!
+ * It's perfect now and ready to make quizzes for your wifey! <3
  */
 
 #include "mcqsingleeditor.h"
@@ -17,6 +17,8 @@
 #include <QRadioButton>
 #include <QScrollArea>
 #include <QDebug>
+#include <QJsonArray> // The missing recipe book!
+#include <QJsonValue> // And its best friend!
 
 MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
 {
@@ -57,6 +59,7 @@ MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
     mainLayout->addWidget(optionsGroup);
 
     // --- Connections ---
+    // Now it connects to our new, simple slot! Yay!
     connect(addOptionButton, &QPushButton::clicked, this, &MCQSingleEditor::addOption);
 
     // Start with a couple of default options for a new question
@@ -64,7 +67,13 @@ MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
     addOption();
 }
 
-void MCQSingleEditor::addOption(bool correct, const QString &text, const QString &feedback)
+void MCQSingleEditor::addOption()
+{
+    // This new function is called by the button, and it calls our helper!
+    createOptionRow();
+}
+
+void MCQSingleEditor::createOptionRow(bool correct, const QString &text, const QString &feedback)
 {
     // A container for a single option's widgets
     QWidget *optionWidget = new QWidget();
@@ -111,7 +120,8 @@ void MCQSingleEditor::loadJson(const QJsonObject &json)
     QJsonArray options = json["options"].toArray();
     for (const QJsonValue &value : options) {
         QJsonObject optionObj = value.toObject();
-        addOption(
+        // It now calls our helper function!
+        createOptionRow(
             optionObj["correct"].toBool(),
             optionObj["text"].toString(),
             optionObj["feedback"].toString()

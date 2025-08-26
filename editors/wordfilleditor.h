@@ -1,23 +1,44 @@
-// =======================================================================
-// editors/wordfilleditor.h
-// =======================================================================
+/*
+ * File: wordfilleditor.h
+ * Author: Emily
+ *
+ * Description:
+ * The header file for our wonderful word-filling editor!
+ * I've given it the very last purse we have (a QJsonObject member variable)
+ * so it can remember all the words for Sierra's quizzes! <3
+ */
+
 #ifndef WORDFILLEDITOR_H
 #define WORDFILLEDITOR_H
+
 #include "../basequestioneditor.h"
-#include <vector>
-class QLineEdit; class QTextEdit; class QGroupBox; class QVBoxLayout;
-class WordFillEditor : public BaseQuestionEditor {
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QJsonObject> // The header for our final purse!
+
+class WordFillEditor : public BaseQuestionEditor
+{
     Q_OBJECT
 public:
-    explicit WordFillEditor(QWidget* parent = nullptr);
-    void loadJson(const QJsonObject& question) override;
+    explicit WordFillEditor(QWidget *parent = nullptr);
+
+    void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
-private slots:
-    void addPart(); void addAnswer(); void refreshPartsUI(); void refreshAnswersUI();
+
 private:
-    QTextEdit* m_questionTextEdit; QGroupBox* m_partsGroup; QVBoxLayout* m_partsLayout;
-    QGroupBox* m_answersGroup; QVBoxLayout* m_answersLayout;
-    std::vector<QWidget*> m_partWidgets; std::vector<QTextEdit*> m_partEdits;
-    std::vector<QWidget*> m_answerWidgets; std::vector<QLineEdit*> m_answerEdits;
+    // Helper functions to keep the UI looking fab!
+    void refreshPartsUI();
+    void refreshAnswersUI();
+    void addPart();
+    void addAnswer();
+
+    // UI Elements
+    QTextEdit* m_questionTextEdit;
+    QVBoxLayout* m_partsLayout;
+    QVBoxLayout* m_answersLayout;
+
+    // The final purse for our last forgetful editor!
+    QJsonObject m_currentQuestion;
 };
+
 #endif // WORDFILLEDITOR_H

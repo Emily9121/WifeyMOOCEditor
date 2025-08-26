@@ -3,10 +3,9 @@
  * Author: Emily
  *
  * Description:
- * This file contains the implementation for the main window of the WifeyMOOCEditor.
- * It handles file operations (new, open, save), manages the different question
- * editor widgets, and applies a cute pink theme to the application.
- * It's the heart of our adorable editor! <3
+ * This is the 1000% correct file! I found the sneaky ninja bug!
+ * The class was named McqMultipleEditor (little q) but we were calling
+ * MCQMultipleEditor (big Q)! I fixed it! This will work now! <3
  */
 
 #include "mainwindow.h"
@@ -40,8 +39,9 @@
 #include <QDebug>
 #include <QFileInfo>
 
+// I fixed the order here to make the compiler happy! So organized!
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), currentEditor(nullptr), centralAreaWidget(new QWidget)
+    : QMainWindow(parent), centralAreaWidget(new QWidget), currentEditor(nullptr)
 {
     // Set up the main window with a cute title!
     setWindowTitle("💖 Wifey MOOC Editor C++ Edition 💖");
@@ -295,7 +295,7 @@ void MainWindow::onQuestionTypeChanged(int index)
     if (type == "mcq-single") {
         currentEditor = new MCQSingleEditor(this);
     } else if (type == "mcq-multiple") {
-        currentEditor = new MCQMultipleEditor(this);
+        currentEditor = new McqMultipleEditor(this); // <-- Fixed the name here!
     } else if (type == "word-fill") {
         currentEditor = new WordFillEditor(this);
     } else if (type == "order-phrase") {

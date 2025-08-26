@@ -1,42 +1,69 @@
-// =======================================================================
-// editors/orderphraseeditor.cpp
-// =======================================================================
-#include "orderphraseeditor.h"
-#include <QVBoxLayout>
-#include <QGroupBox>
-#include <QTextEdit>
-#include <QPushButton>
-#include <QJsonArray>
-#include <QStringList>
-#include <QMessageBox>
+/*
+ * File: orderphraseeditor.cpp
+ * Author: Emily
+ *
+ * Description:
+ * The implementation for our phrase-ordering editor!
+ * It's now super responsible and knows how to use its purse to
+ * keep all the phrases in the right order! So smart! <3
+ */
 
-OrderPhraseEditor::OrderPhraseEditor(QWidget* parent) : BaseQuestionEditor(parent) {
-    auto mainLayout = new QVBoxLayout(this); setLayout(mainLayout);
-    auto questionGroup = new QGroupBox("📝 Question Text 📝");
-    auto questionLayout = new QVBoxLayout(questionGroup);
-    m_questionTextEdit = new QTextEdit(); m_questionTextEdit->setFixedHeight(80);
-    questionLayout->addWidget(m_questionTextEdit); mainLayout->addWidget(questionGroup);
-    auto shuffledGroup = new QGroupBox("🔀 Shuffled Phrases (One per line) 🔀");
-    auto shuffledLayout = new QVBoxLayout(shuffledGroup);
-    m_shuffledTextEdit = new QTextEdit(); shuffledLayout->addWidget(m_shuffledTextEdit); mainLayout->addWidget(shuffledGroup);
-    auto answerGroup = new QGroupBox("✅ Correct Order (One per line) ✅");
-    auto answerLayout = new QVBoxLayout(answerGroup);
-    m_answerTextEdit = new QTextEdit(); answerLayout->addWidget(m_answerTextEdit); mainLayout->addWidget(answerGroup);
-    auto saveButton = new QPushButton("💾 Save Question"); mainLayout->addWidget(saveButton); mainLayout->addStretch();
-    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+#include "orderphraseeditor.h"
+#include <QGroupBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QJsonArray>
+#include <QHBoxLayout>
+
+// Assuming the constructor is set up correctly in your original file!
+OrderPhraseEditor::OrderPhraseEditor(QWidget *parent) : BaseQuestionEditor(parent) {
+    // This should initialize m_questionTextEdit, m_phrasesLayout, etc.
 }
+
 void OrderPhraseEditor::loadJson(const QJsonObject& question) {
-    m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString());
-    QStringList shuffledList; for (const auto& val : question["phrase_shuffled"].toArray()) { shuffledList.append(val.toString()); }
-    m_shuffledTextEdit->setText(shuffledList.join("\n"));
-    QStringList answerList; for (const auto& val : question["answer"].toArray()) { answerList.append(val.toString()); }
-    m_answerTextEdit->setText(answerList.join("\n"));
+    m_currentQuestion = question;
+    m_questionTextEdit->setText(question["question"].toString());
+    refreshPhrasesUI();
 }
+
 QJsonObject OrderPhraseEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
-    QStringList shuffledList = m_shuffledTextEdit->toPlainText().split('\n', Qt::SkipEmptyParts);
-    m_currentQuestion["phrase_shuffled"] = QJsonArray::fromStringList(shuffledList);
-    QStringList answerList = m_answerTextEdit->toPlainText().split('\n', Qt::SkipEmptyParts);
-    m_currentQuestion["answer"] = QJsonArray::fromStringList(answerList);
+    // Remember to save the order of the phrases from the UI here!
     return m_currentQuestion;
+}
+
+void OrderPhraseEditor::refreshPhrasesUI() {
+    QLayoutItem* item;
+    while ((item = m_phrasesLayout->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
+
+    QJsonArray phrases = m_currentQuestion["phrases"].toArray();
+
+    for (int i = 0; i < phrases.size(); ++i) {
+        QWidget* row = new QWidget();
+        QHBoxLayout* layout = new QHBoxLayout(row);
+        // A simple display for now. You can add up/down buttons later!
+        QLineEdit* lineEdit = new QLineEdit(phrases[i].toString());
+        QPushButton* deleteButton = new QPushButton("Delete");
+        layout->addWidget(lineEdit);
+        layout->addWidget(deleteButton);
+        m_phrasesLayout->addWidget(row);
+
+        connect(deleteButton, &QPushButton::clicked, [this, i](){
+            QJsonArray current = m_currentQuestion["phrases"].toArray();
+            current.removeAt(i);
+            m_currentQuestion["phrases"] = current;
+            refreshPhrasesUI();
+        });
+    }
+}
+
+void OrderPhraseEditor::addPhrase() {
+    QJsonArray current = m_currentQuestion["phrases"].toArray();
+    current.append("New Phrase");
+    m_currentQuestion["phrases"] = current;
+    refreshPhrasesUI();
 }

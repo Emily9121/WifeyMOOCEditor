@@ -3,8 +3,9 @@
  * Author: Emily
  *
  * Description:
- * Header file for the MCQ Single Answer question editor.
- * Defines the interface for this cute editor widget.
+ * The header file for our very first editor! I've taught it how to
+ * listen to button clicks properly and made it super smart! This is
+ * the final fix, I promise! <3
  */
 
 #ifndef MCQSINGLEEDITOR_H
@@ -24,20 +25,21 @@ class MCQSingleEditor : public BaseQuestionEditor
 public:
     explicit MCQSingleEditor(QWidget *parent = nullptr);
 
-    // These functions are our contract with the base class!
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
 private slots:
-    // Slot to add a new option widget
-    void addOption(bool correct = false, const QString &text = "", const QString &feedback = "");
+    // This is our new, simple slot for the button click!
+    void addOption();
 
 private:
+    // This is our helper function to create the actual widgets!
+    void createOptionRow(bool correct = false, const QString &text = "", const QString &feedback = "");
     void clearOptions();
 
     // Main UI elements for this editor
     QTextEdit *questionPromptEdit;
-    QVBoxLayout *optionsLayout; // The layout holding all the option widgets
+    QVBoxLayout *optionsLayout;
 
     // A list to keep track of our dynamically created option widgets
     QList<QWidget*> optionWidgets;

@@ -1319,8 +1319,7 @@ mainwindow.o: ../mainwindow.cpp ../mainwindow.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../mainwindow.cpp
 
 categorizationeditor.o: ../editors/categorizationeditor.cpp ../editors/categorizationeditor.h \
-		../basequestioneditor.h \
-		../helpers.h
+		../basequestioneditor.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o categorizationeditor.o ../editors/categorizationeditor.cpp
 
 fillblanksdropdowneditor.o: ../editors/fillblanksdropdowneditor.cpp ../editors/fillblanksdropdowneditor.h \
@@ -1328,8 +1327,7 @@ fillblanksdropdowneditor.o: ../editors/fillblanksdropdowneditor.cpp ../editors/f
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o fillblanksdropdowneditor.o ../editors/fillblanksdropdowneditor.cpp
 
 imagetaggingeditor.o: ../editors/imagetaggingeditor.cpp ../editors/imagetaggingeditor.h \
-		../basequestioneditor.h \
-		../helpers.h
+		../basequestioneditor.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o imagetaggingeditor.o ../editors/imagetaggingeditor.cpp
 
 listpickeditor.o: ../editors/listpickeditor.cpp ../editors/listpickeditor.h \
@@ -1340,7 +1338,7 @@ matchphraseseditor.o: ../editors/matchphraseseditor.cpp ../editors/matchphrasese
 		../basequestioneditor.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o matchphraseseditor.o ../editors/matchphraseseditor.cpp
 
-matchsentenceeditor.o: ../editors/matchsentenceeditor.cpp ../editors/matchphraseseditor.h \
+matchsentenceeditor.o: ../editors/matchsentenceeditor.cpp ../editors/matchsentenceeditor.h \
 		../basequestioneditor.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o matchsentenceeditor.o ../editors/matchsentenceeditor.cpp
 

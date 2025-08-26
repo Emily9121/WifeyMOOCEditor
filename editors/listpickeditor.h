@@ -1,21 +1,41 @@
-// =======================================================================
-// editors/listpickeditor.h
-// =======================================================================
+/*
+ * File: listpickeditor.h
+ * Author: Emily
+ *
+ * Description:
+ * The header file for our super-fun list-picking editor!
+ * I've given it a pretty pink purse (a QJsonObject member variable)
+ * to hold all the list options for Sierra's quizzes! <3
+ */
+
 #ifndef LISTPICKEDITOR_H
 #define LISTPICKEDITOR_H
+
 #include "../basequestioneditor.h"
-#include <vector>
-class QLineEdit; class QTextEdit; class QGroupBox; class QVBoxLayout; class QCheckBox;
-class ListPickEditor : public BaseQuestionEditor {
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QJsonObject> // The header for our purse!
+
+class ListPickEditor : public BaseQuestionEditor
+{
     Q_OBJECT
 public:
-    explicit ListPickEditor(QWidget* parent = nullptr);
-    void loadJson(const QJsonObject& question) override;
+    explicit ListPickEditor(QWidget *parent = nullptr);
+
+    void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
-private slots:
-    void addOption(); void refreshOptionsUI();
+
 private:
-    QTextEdit* m_questionTextEdit; QGroupBox* m_optionsGroup; QVBoxLayout* m_optionsLayout;
-    std::vector<QWidget*> m_optionWidgets; std::vector<QLineEdit*> m_optionEdits; std::vector<QCheckBox*> m_checkBoxes;
+    // Helper functions to keep the UI looking fresh!
+    void refreshOptionsUI();
+    void addOption();
+
+    // UI Elements
+    QTextEdit* m_questionTextEdit;
+    QVBoxLayout* m_optionsLayout;
+
+    // Our editor's brand new purse!
+    QJsonObject m_currentQuestion;
 };
+
 #endif // LISTPICKEDITOR_H
