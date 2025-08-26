@@ -29,10 +29,10 @@ WordFillEditor::WordFillEditor(QWidget* parent) : BaseQuestionEditor(parent) {
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addPartButton, &QPushButton::clicked, this, &WordFillEditor::addPart);
     connect(addAnswerButton, &QPushButton::clicked, this, &WordFillEditor::addAnswer);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void WordFillEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(m_currentQuestion["question"].toString()); refreshPartsUI(); refreshAnswersUI(); }
-QJsonObject WordFillEditor::getSavedQuestion() {
+void WordFillEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(m_currentQuestion["question"].toString()); refreshPartsUI(); refreshAnswersUI(); }
+QJsonObject WordFillEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QJsonArray partsArray; for (auto* partEdit : m_partEdits) { partsArray.append(partEdit->toPlainText()); }
     m_currentQuestion["sentence_parts"] = partsArray;

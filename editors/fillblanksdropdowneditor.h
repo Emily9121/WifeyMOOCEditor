@@ -10,8 +10,8 @@ class FillBlanksDropdownEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit FillBlanksDropdownEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addPart(); void addBlank(); void refreshPartsUI(); void refreshBlanksUI();
 private:

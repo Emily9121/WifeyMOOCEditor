@@ -30,10 +30,10 @@ SequenceAudioEditor::SequenceAudioEditor(QWidget* parent) : BaseQuestionEditor(p
     buttonLayout->addWidget(addOptionButton); buttonLayout->addWidget(saveButton);
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addOptionButton, &QPushButton::clicked, this, &SequenceAudioEditor::addOption);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void SequenceAudioEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshOptionsUI(); }
-QJsonObject SequenceAudioEditor::getSavedQuestion() {
+void SequenceAudioEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshOptionsUI(); }
+QJsonObject SequenceAudioEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QJsonArray optionsArray; for(auto* edit : m_optionEdits) { optionsArray.append(QJsonObject{{"option", edit->text()}}); }
     m_currentQuestion["audio_options"] = optionsArray;

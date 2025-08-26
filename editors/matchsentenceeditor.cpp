@@ -27,10 +27,10 @@ MatchPhrasesEditor::MatchPhrasesEditor(QWidget* parent) : BaseQuestionEditor(par
     buttonLayout->addWidget(addPairButton); buttonLayout->addWidget(saveButton);
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addPairButton, &QPushButton::clicked, this, &MatchPhrasesEditor::addPair);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void MatchPhrasesEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshPairsUI(); }
-QJsonObject MatchPhrasesEditor::getSavedQuestion() {
+void MatchPhrasesEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshPairsUI(); }
+QJsonObject MatchPhrasesEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QJsonArray pairsArray; QJsonObject answerObject;
     for(const auto& pairWidgets : m_pairWidgets) {

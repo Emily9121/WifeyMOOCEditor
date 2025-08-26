@@ -29,9 +29,9 @@ ImageTaggingEditor::ImageTaggingEditor(QWidget* parent) : BaseQuestionEditor(par
     connect(browseBtn, &QPushButton::clicked, [this](){ browseForFile(this, m_mainImageEdit); });
     connect(addTagBtn, &QPushButton::clicked, this, &ImageTaggingEditor::addTag);
     connect(addAltBtn, &QPushButton::clicked, this, &ImageTaggingEditor::addAlternative);
-    connect(saveBtn, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveBtn, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void ImageTaggingEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; refreshUI(); }
+void ImageTaggingEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; refreshUI(); }
 void ImageTaggingEditor::refreshUI() {
     m_questionTextEdit->setText(m_currentQuestion["question"].toString());
     m_mainImageEdit->setText(m_currentQuestion["media"].toObject()["image"].toString());
@@ -99,7 +99,7 @@ void ImageTaggingEditor::addAlternative() {
     alts.append(QJsonObject{{"media", QJsonObject{{"image", ""}}}, {"button_label", "New Alt"}, {"answer", QJsonObject()}});
     m_currentQuestion["alternatives"] = alts; refreshUI();
 }
-QJsonObject ImageTaggingEditor::getSavedQuestion() {
+QJsonObject ImageTaggingEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     m_currentQuestion["media"] = QJsonObject{{"image", m_mainImageEdit->text()}};
     m_currentQuestion["button_label"] = m_mainButtonLabelEdit->text();

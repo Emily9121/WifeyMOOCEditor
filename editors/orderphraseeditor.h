@@ -9,8 +9,8 @@ class OrderPhraseEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit OrderPhraseEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private:
     QTextEdit* m_questionTextEdit; QTextEdit* m_shuffledTextEdit; QTextEdit* m_answerTextEdit;
 };

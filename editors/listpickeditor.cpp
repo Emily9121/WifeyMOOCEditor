@@ -27,10 +27,10 @@ ListPickEditor::ListPickEditor(QWidget* parent) : BaseQuestionEditor(parent) {
     buttonLayout->addWidget(addOptionButton); buttonLayout->addWidget(saveButton);
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addOptionButton, &QPushButton::clicked, this, &ListPickEditor::addOption);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! �", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! �", "Question saved beautifully!"); });
 }
-void ListPickEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(m_currentQuestion["question"].toString()); refreshOptionsUI(); }
-QJsonObject ListPickEditor::getSavedQuestion() {
+void ListPickEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(m_currentQuestion["question"].toString()); refreshOptionsUI(); }
+QJsonObject ListPickEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QJsonArray optionsArray; QJsonArray answerArray;
     for (size_t i = 0; i < m_optionEdits.size(); ++i) {

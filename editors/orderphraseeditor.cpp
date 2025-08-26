@@ -23,16 +23,16 @@ OrderPhraseEditor::OrderPhraseEditor(QWidget* parent) : BaseQuestionEditor(paren
     auto answerLayout = new QVBoxLayout(answerGroup);
     m_answerTextEdit = new QTextEdit(); answerLayout->addWidget(m_answerTextEdit); mainLayout->addWidget(answerGroup);
     auto saveButton = new QPushButton("💾 Save Question"); mainLayout->addWidget(saveButton); mainLayout->addStretch();
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void OrderPhraseEditor::loadQuestion(const QJsonObject& question) {
+void OrderPhraseEditor::loadJson(const QJsonObject& question) {
     m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString());
     QStringList shuffledList; for (const auto& val : question["phrase_shuffled"].toArray()) { shuffledList.append(val.toString()); }
     m_shuffledTextEdit->setText(shuffledList.join("\n"));
     QStringList answerList; for (const auto& val : question["answer"].toArray()) { answerList.append(val.toString()); }
     m_answerTextEdit->setText(answerList.join("\n"));
 }
-QJsonObject OrderPhraseEditor::getSavedQuestion() {
+QJsonObject OrderPhraseEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QStringList shuffledList = m_shuffledTextEdit->toPlainText().split('\n', Qt::SkipEmptyParts);
     m_currentQuestion["phrase_shuffled"] = QJsonArray::fromStringList(shuffledList);

@@ -7,8 +7,8 @@ class MatchPhrasesEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit MatchPhrasesEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addPair(); void refreshPairsUI();
 private:

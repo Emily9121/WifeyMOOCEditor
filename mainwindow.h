@@ -1,14 +1,25 @@
+/*
+ * File: mainwindow.h
+ * Author: Emily
+ *
+ * Description:
+ * The header file for our main window! This is like the table of contents
+ * that tells the compiler about all the amazing functions and variables
+ * our main window has. It's super important! <3
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QListWidget>
-#include <QStackedWidget>
-#include <QJsonArray>
 #include <QJsonObject>
-#include <map>
+#include "basequestioneditor.h"
 
-class BaseQuestionEditor;
+// Forward declarations to keep things tidy!
+class QAction;
+class QMenu;
+class QComboBox;
+class QVBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -19,32 +30,50 @@ public:
     ~MainWindow();
 
 private slots:
-    void newJson();
-    void loadJson();
-    bool saveJson();
-    bool saveJsonAs();
-    void saveAndLaunch();
-    void addQuestion();
-    void deleteQuestion();
-    void moveQuestionUp();
-    void moveQuestionDown();
-    void onQuestionSelected(int index);
+    // Slots for our file menu actions!
+    void newFile();
+    void openFile();
+    bool saveFile();
+    bool saveFileAs();
+
+    // Slot for when the user picks a new question type!
+    void onQuestionTypeChanged(int index);
 
 private:
-    void setupUi();
-    void refreshQuestionsList();
-    void createEditorForQuestion(const QJsonObject& question, int index);
-    QJsonObject getQuestionTemplate(const QString& type);
-    void cleanupEditors();
+    // Functions to set up our beautiful UI
+    void createActions();
+    void createMenus();
+    void applyStylesheet();
 
-    QListWidget* m_questionsListWidget;
-    QStackedWidget* m_editorStackedWidget;
-    QWidget* m_welcomeWidget;
+    // Functions to manage the editors
+    void clearCurrentEditor();
+    void loadEditorForQuestion(const QJsonObject &questionJson);
+    bool saveToFile(const QString &filePath);
 
-    QJsonArray m_questions;
-    QString m_currentFilePath;
+    // --- All our lovely UI elements and variables ---
 
-    std::map<int, QWidget*> m_editorWidgets;
+    // The main layout and widgets
+    QWidget *centralAreaWidget;
+    QVBoxLayout *mainLayout;
+    QWidget *editorContainer;
+    QVBoxLayout *editorLayout;
+
+    // The dropdown for picking question types
+    QComboBox *questionTypeSelector;
+
+    // The currently active editor widget
+    QWidget *currentEditor;
+
+    // File path for saving
+    QString currentFilePath;
+
+    // --- Menus and Actions for the top menu bar ---
+    QMenu *fileMenu;
+    QAction *newAction;
+    QAction *openAction;
+    QAction *saveAction;
+    QAction *saveAsAction;
+    QAction *exitAction;
 };
 
 #endif // MAINWINDOW_H

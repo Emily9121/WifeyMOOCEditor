@@ -10,8 +10,8 @@ class SequenceAudioEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit SequenceAudioEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addOption(); void refreshOptionsUI();
 private:

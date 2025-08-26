@@ -10,8 +10,8 @@ class McqMultipleEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit McqMultipleEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addOption(); void refreshOptionsUI();
 private:

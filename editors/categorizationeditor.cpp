@@ -32,10 +32,10 @@ CategorizationEditor::CategorizationEditor(QWidget* parent) : BaseQuestionEditor
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addCategoryButton, &QPushButton::clicked, this, &CategorizationEditor::addCategory);
     connect(addStimulusButton, &QPushButton::clicked, this, &CategorizationEditor::addStimulus);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void CategorizationEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshCategoriesUI(); refreshStimuliUI(); }
-QJsonObject CategorizationEditor::getSavedQuestion() {
+void CategorizationEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshCategoriesUI(); refreshStimuliUI(); }
+QJsonObject CategorizationEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QStringList categoriesList; for(auto* edit : m_categoryEdits) { categoriesList.append(edit->text()); }
     m_currentQuestion["categories"] = QJsonArray::fromStringList(categoriesList);

@@ -30,10 +30,10 @@ FillBlanksDropdownEditor::FillBlanksDropdownEditor(QWidget* parent) : BaseQuesti
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addPartButton, &QPushButton::clicked, this, &FillBlanksDropdownEditor::addPart);
     connect(addBlankButton, &QPushButton::clicked, this, &FillBlanksDropdownEditor::addBlank);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void FillBlanksDropdownEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshPartsUI(); refreshBlanksUI(); }
-QJsonObject FillBlanksDropdownEditor::getSavedQuestion() {
+void FillBlanksDropdownEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(question["question"].toString()); refreshPartsUI(); refreshBlanksUI(); }
+QJsonObject FillBlanksDropdownEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QJsonArray partsArray; for(auto* edit : m_partEdits) { partsArray.append(edit->toPlainText()); }
     m_currentQuestion["sentence_parts"] = partsArray;

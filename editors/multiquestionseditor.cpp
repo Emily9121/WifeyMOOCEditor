@@ -17,14 +17,14 @@ MultiQuestionsEditor::MultiQuestionsEditor(QWidget* parent) : BaseQuestionEditor
     infoLabel->setWordWrap(true); mainLayout->addWidget(infoLabel);
     m_jsonEditor = new QTextEdit(); mainLayout->addWidget(m_jsonEditor);
     auto saveButton = new QPushButton("💾 Save Question"); mainLayout->addWidget(saveButton);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void MultiQuestionsEditor::loadQuestion(const QJsonObject& question) {
+void MultiQuestionsEditor::loadJson(const QJsonObject& question) {
     m_currentQuestion = question;
     QJsonDocument doc(question["questions"].toArray());
     m_jsonEditor->setText(doc.toJson(QJsonDocument::Indented));
 }
-QJsonObject MultiQuestionsEditor::getSavedQuestion() {
+QJsonObject MultiQuestionsEditor::getJson() {
     QJsonDocument doc = QJsonDocument::fromJson(m_jsonEditor->toPlainText().toUtf8());
     m_currentQuestion["questions"] = doc.array();
     return m_currentQuestion;

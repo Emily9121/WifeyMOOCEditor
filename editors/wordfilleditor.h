@@ -10,8 +10,8 @@ class WordFillEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit WordFillEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addPart(); void addAnswer(); void refreshPartsUI(); void refreshAnswersUI();
 private:

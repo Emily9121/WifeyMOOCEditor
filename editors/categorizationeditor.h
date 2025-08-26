@@ -10,8 +10,8 @@ class CategorizationEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit CategorizationEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addCategory(); void addStimulus(); void refreshCategoriesUI(); void refreshStimuliUI();
 private:

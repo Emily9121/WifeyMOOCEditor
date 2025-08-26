@@ -28,10 +28,10 @@ McqMultipleEditor::McqMultipleEditor(QWidget* parent) : BaseQuestionEditor(paren
     buttonLayout->addWidget(addOptionButton); buttonLayout->addWidget(saveButton);
     mainLayout->addLayout(buttonLayout); mainLayout->addStretch();
     connect(addOptionButton, &QPushButton::clicked, this, &McqMultipleEditor::addOption);
-    connect(saveButton, &QPushButton::clicked, [this](){ getSavedQuestion(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
+    connect(saveButton, &QPushButton::clicked, [this](){ getJson(); QMessageBox::information(this, "Success! 💖", "Question saved beautifully!"); });
 }
-void McqMultipleEditor::loadQuestion(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(m_currentQuestion["question"].toString()); refreshOptionsUI(); }
-QJsonObject McqMultipleEditor::getSavedQuestion() {
+void McqMultipleEditor::loadJson(const QJsonObject& question) { m_currentQuestion = question; m_questionTextEdit->setText(m_currentQuestion["question"].toString()); refreshOptionsUI(); }
+QJsonObject McqMultipleEditor::getJson() {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     QJsonArray optionsArray; QJsonArray answerArray;
     for (size_t i = 0; i < m_optionTextEdits.size(); ++i) {

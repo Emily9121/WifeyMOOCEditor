@@ -10,8 +10,8 @@ class ImageTaggingEditor : public BaseQuestionEditor {
     Q_OBJECT
 public:
     explicit ImageTaggingEditor(QWidget* parent = nullptr);
-    void loadQuestion(const QJsonObject& question) override;
-    QJsonObject getSavedQuestion() override;
+    void loadJson(const QJsonObject& question) override;
+    QJsonObject getJson() override;
 private slots:
     void addTag(); void addAlternative(); void refreshUI();
 private:
