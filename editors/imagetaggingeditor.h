@@ -30,6 +30,8 @@ private slots:
     void addAlternative();
     void browseMainImage();
     void browseAlternativeImage(QLineEdit* imageEdit);
+    // 💖 Our new slot to browse for optional media! 💖
+    void browseMedia();
 
 private:
     void refreshUI();
@@ -44,6 +46,10 @@ private:
     QLineEdit* m_buttonLabelEdit;
     QVBoxLayout* m_mainTagsLayout;
     QVBoxLayout* m_alternativesLayout;
+    
+    // 💖 Our new UI elements for optional media! 💖
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
     // Data storage
     QJsonObject m_currentQuestion;

@@ -1,3 +1,8 @@
+// =============================================================================================
+// FILE: editors/fillblanksdropdowneditor.cpp
+//
+// Description: The corrected implementation for our fill-blanks dropdown editor!
+// =============================================================================================
 /*
 * File: fillblanksdropdowneditor.cpp  
 * Author: Emily
@@ -23,7 +28,6 @@ FillBlanksDropdownEditor::FillBlanksDropdownEditor(QWidget *parent) : BaseQuesti
 
     m_questionTextEdit = new QTextEdit();
     m_questionTextEdit->setPlaceholderText("Choose from the dropdowns, sweetie! ⬇️");
-    m_questionTextEdit->setMaximumHeight(100);
     questionLayout->addWidget(m_questionTextEdit);
 
     mainLayout->addWidget(questionGroup);
@@ -34,7 +38,8 @@ FillBlanksDropdownEditor::FillBlanksDropdownEditor(QWidget *parent) : BaseQuesti
 
     auto mediaRowLayout = new QHBoxLayout();
     m_mediaTypeCombo = new QComboBox();
-    m_mediaTypeCombo->addItems({"None", "Video", "Audio"});
+    // 💖 I've added 'Image' here so you can select it from the dropdown! 💖
+    m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
 
     m_mediaEdit = new QLineEdit();
     m_mediaEdit->setPlaceholderText("Select media file path...");
@@ -95,7 +100,8 @@ FillBlanksDropdownEditor::FillBlanksDropdownEditor(QWidget *parent) : BaseQuesti
     connect(addBlankButton, &QPushButton::clicked, this, &FillBlanksDropdownEditor::addBlank);
     blanksGroupLayout->addWidget(addBlankButton);
 
-    mainLayout->addWidget(blanksGroup);
+    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
+    mainLayout->addWidget(blanksGroup, 1);
 
     // Initialize with defaults  
     m_currentQuestion["type"] = "fill_blanks_dropdown";
@@ -133,6 +139,10 @@ void FillBlanksDropdownEditor::loadJson(const QJsonObject& question)
         } else if (media.contains("audio")) {
             m_mediaTypeCombo->setCurrentText("Audio");  
             m_mediaEdit->setText(media["audio"].toString());
+        // 💖 And a cute little check for our new 'Image' type! 💖
+        } else if (media.contains("image")) {
+            m_mediaTypeCombo->setCurrentText("Image");
+            m_mediaEdit->setText(media["image"].toString());
         }
     }
 
@@ -232,7 +242,6 @@ void FillBlanksDropdownEditor::refreshPartsUI()
         QTextEdit* textEdit = new QTextEdit();
         textEdit->setPlainText(partText);
         textEdit->setPlaceholderText("Sentence part text (can include \\n for newlines)...");
-        textEdit->setMaximumHeight(80);
         layout->addWidget(textEdit);
 
         m_partsLayout->addWidget(row);
@@ -293,7 +302,6 @@ void FillBlanksDropdownEditor::refreshBlanksUI()
         }
         optionsTextEdit->setPlainText(optionsList.join("\n"));
         optionsTextEdit->setPlaceholderText(" \nOption 1\nOption 2\nOption 3");
-        optionsTextEdit->setMaximumHeight(100);
         layout->addWidget(optionsTextEdit);
 
         // Correct answer selection
@@ -363,6 +371,8 @@ void FillBlanksDropdownEditor::browseMedia()
         filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
     } else if (mediaType == "audio") {
         filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
+    } else if (mediaType == "image") {
+        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
     } else {
         return;
     }

@@ -5,7 +5,7 @@
 * Description:
 * The COMPLETE and PERFECT main window header! ✨
 * Now with ALL function declarations to match the implementation!
-* No more compilation errors, just pure adorable functionality! 💖
+* Added new slots for adding and deleting questions, and a proper layout variable! 💖
 */
 
 #ifndef MAINWINDOW_H
@@ -41,8 +41,10 @@ private slots:
     void openFile();
     bool saveFile();
     bool saveFileAs();
-
-    // Slot for when the user picks a new question type from the dropdown!
+    // 💖 Our new slots to add and delete questions! So cute! 💖
+    void onAddQuestion();
+    void onDeleteQuestion();
+    // Slots for when the user picks a new question type from the dropdown!
     void onQuestionTypeChanged(int index);
 
     // Slot for when the user clicks a question in our new list!
@@ -52,9 +54,9 @@ private:
     // Functions to set up our beautiful new UI
     void createActions();
     void createMenus();
-    void applyStylesheet();  // ✨ This was missing! Fixed! ✨
     void setupMainLayout();
     void showWelcomeMessage();
+    void applyStylesheet();
 
     // Functions to manage the editors and our new question list
     void clearEditorPanel();
@@ -66,10 +68,9 @@ private:
     // --- All our lovely UI elements and variables ---
 
     // The main layout and widgets
-    QSplitter *mainSplitter;
-    QWidget *leftPanel;
-    QWidget *rightPanel;
-    QVBoxLayout *rightPanelLayout;
+    QPushButton *newButton;
+    QPushButton *saveButton;
+    QPushButton *deleteButton;
 
     // The dropdown for picking question types
     QComboBox *questionTypeSelector;
@@ -92,6 +93,9 @@ private:
     QAction *saveAction;
     QAction *saveAsAction;
     QAction *exitAction;
+
+    // 💖 This little variable was hiding! Now it's a proper member! 💖
+    QVBoxLayout *mainEditorFrameLayout;
 };
 
 #endif // MAINWINDOW_H

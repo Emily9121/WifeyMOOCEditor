@@ -9,7 +9,6 @@
 
 #include "listpickeditor.h"
 #include "../helpers.h"
-#include <QFileDialog>
 #include <QMessageBox>
 
 ListPickEditor::ListPickEditor(QWidget *parent) : BaseQuestionEditor(parent) 
@@ -23,32 +22,10 @@ ListPickEditor::ListPickEditor(QWidget *parent) : BaseQuestionEditor(parent)
 
     m_questionTextEdit = new QTextEdit();
     m_questionTextEdit->setPlaceholderText("Pick all the cute options you want! 💖");
+    m_questionTextEdit->setMaximumHeight(100);
     questionLayout->addWidget(m_questionTextEdit);
 
     mainLayout->addWidget(questionGroup);
-    
-    // Media section  
-    auto mediaGroup = new QGroupBox("🎬 Media (Optional) 🎬");
-    auto mediaLayout = new QVBoxLayout(mediaGroup);
-
-    auto mediaRowLayout = new QHBoxLayout();
-    m_mediaTypeCombo = new QComboBox();
-    m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
-
-    m_mediaEdit = new QLineEdit();
-    m_mediaEdit->setPlaceholderText("Select media file path...");
-
-    auto browseMediaBtn = new QPushButton("Browse 📁");
-    connect(browseMediaBtn, &QPushButton::clicked, this, &ListPickEditor::browseMedia);
-
-    mediaRowLayout->addWidget(new QLabel("Type:"));
-    mediaRowLayout->addWidget(m_mediaTypeCombo);
-    mediaRowLayout->addWidget(new QLabel("File:"));
-    mediaRowLayout->addWidget(m_mediaEdit, 1);
-    mediaRowLayout->addWidget(browseMediaBtn);
-
-    mediaLayout->addLayout(mediaRowLayout);
-    mainLayout->addWidget(mediaGroup);
 
     // Options section
     auto optionsGroup = new QGroupBox("☑️ Selectable Options ☑️");
@@ -71,15 +48,13 @@ ListPickEditor::ListPickEditor(QWidget *parent) : BaseQuestionEditor(parent)
     connect(addOptionButton, &QPushButton::clicked, this, &ListPickEditor::addOption);
     optionsGroupLayout->addWidget(addOptionButton);
 
-    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
-    mainLayout->addWidget(optionsGroup, 1);
+    mainLayout->addWidget(optionsGroup);
 
     // Initialize with defaults
     m_currentQuestion["type"] = "list_pick";
     m_currentQuestion["question"] = "";
     m_currentQuestion["options"] = QJsonArray{"Option 1", "Option 2", "Option 3"};
     m_currentQuestion["answer"] = QJsonArray{0};
-    m_currentQuestion["media"] = QJsonValue::Null;
 
     refreshOptionsUI();
 }
@@ -90,25 +65,6 @@ void ListPickEditor::loadJson(const QJsonObject& question)
 
     m_questionTextEdit->setText(question["question"].toString());
 
-    // Load media
-    QJsonValue mediaValue = question["media"];
-    if (mediaValue.isNull()) {
-        m_mediaTypeCombo->setCurrentText("None");
-        m_mediaEdit->clear();
-    } else {
-        QJsonObject media = mediaValue.toObject();
-        if (media.contains("video")) {
-            m_mediaTypeCombo->setCurrentText("Video");
-            m_mediaEdit->setText(media["video"].toString());
-        } else if (media.contains("audio")) {
-            m_mediaTypeCombo->setCurrentText("Audio");  
-            m_mediaEdit->setText(media["audio"].toString());
-        } else if (media.contains("image")) {
-            m_mediaTypeCombo->setCurrentText("Image");
-            m_mediaEdit->setText(media["image"].toString());
-        }
-    }
-
     refreshOptionsUI();
 }
 
@@ -116,18 +72,6 @@ QJsonObject ListPickEditor::getJson()
 {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     m_currentQuestion["type"] = "list_pick";
-
-    // Handle media
-    QString mediaType = m_mediaTypeCombo->currentText();
-    QString mediaPath = m_mediaEdit->text().trimmed();
-
-    if (mediaType == "None" || mediaPath.isEmpty()) {
-        m_currentQuestion["media"] = QJsonValue::Null;
-    } else {
-        QJsonObject media;
-        media[mediaType.toLower()] = mediaPath;
-        m_currentQuestion["media"] = media;
-    }
 
     // Save options and generate answer array
     QJsonArray optionsArray;
@@ -236,27 +180,4 @@ void ListPickEditor::clearOptions()
         widget->deleteLater();
     }
     m_optionWidgets.clear();
-}
-
-void ListPickEditor::browseMedia()
-{
-    QString filter;
-    QString mediaType = m_mediaTypeCombo->currentText().toLower();
-
-    if (mediaType == "video") {
-        filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
-    } else if (mediaType == "audio") {
-        filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
-    } else if (mediaType == "image") {
-        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
-    } else {
-        return;
-    }
-
-    QString fileName = QFileDialog::getOpenFileName(this,
-        "💖 Select Cute Media File 💖", "", filter);
-
-    if (!fileName.isEmpty()) {
-        m_mediaEdit->setText(fileName);
-    }
 }

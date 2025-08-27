@@ -4,7 +4,8 @@
  *
  * Description:
  * The COMPLETE and SAFE main window implementation with the missing onQuestionTypeChanged() slot.
- * Added robust widget management to fix all crashes when switching questions. 💖
+ * Now with a proper QSplitter layout to fix sizing issues and prevent crashes. 💖
+ * With working Add and Delete question buttons! So functional and cute! ✨
  */
 
 #include "mainwindow.h"
@@ -41,10 +42,48 @@ MainWindow::MainWindow(QWidget *parent)
     createMenus();
     applyStylesheet();
 
-    connect(questionTypeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &MainWindow::onQuestionTypeChanged);
-    connect(questionListWidget, &QListWidget::currentItemChanged,
-            this, &MainWindow::onQuestionSelected);
+    // Find our cute widgets from the UI file and connect them! 
+    // We're doing this after setupUi() to make sure they exist!
+    newButton = findChild<QPushButton*>("newButton");
+    saveButton = findChild<QPushButton*>("saveButton");
+    deleteButton = findChild<QPushButton*>("deleteButton");
+    
+    questionListWidget = findChild<QListWidget*>("questionList");
+    questionTypeSelector = findChild<QComboBox*>("questionTypeSelector");
+    
+    QFrame* mainEditorFrame = findChild<QFrame*>("mainEditorFrame");
+    if (mainEditorFrame) {
+        mainEditorFrameLayout = qobject_cast<QVBoxLayout*>(mainEditorFrame->layout());
+    }
+
+    if (newButton) connect(newButton, &QPushButton::clicked, this, &MainWindow::onAddQuestion);
+    if (saveButton) connect(saveButton, &QPushButton::clicked, this, &MainWindow::saveFile);
+    if (deleteButton) connect(deleteButton, &QPushButton::clicked, this, &MainWindow::onDeleteQuestion);
+
+    // 💖 We need to add all the question types to the dropdown here! This was the missing piece! 💖
+    if (questionTypeSelector) {
+        questionTypeSelector->addItem("Multiple Choice (Single Answer)", "mcq_single");
+        questionTypeSelector->addItem("Multiple Choice (Multiple Answers)", "mcq_multiple");
+        questionTypeSelector->addItem("Word Fill", "word_fill");
+        questionTypeSelector->addItem("Order Phrase", "order_phrase");
+        questionTypeSelector->addItem("Match Phrases", "match_phrases");
+        questionTypeSelector->addItem("Categorization", "categorization_multiple");
+        questionTypeSelector->addItem("List Pick", "list_pick");
+        questionTypeSelector->addItem("Image Tagging", "image_tagging");
+        questionTypeSelector->addItem("Match Sentence", "match_sentence");
+        questionTypeSelector->addItem("Sequence Audio", "sequence_audio");
+        questionTypeSelector->addItem("Fill in the Blanks (Dropdown)", "fill_blanks_dropdown");
+        questionTypeSelector->addItem("Multi-Questions", "multi_questions");
+    }
+
+    if (questionTypeSelector) {
+        connect(questionTypeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, &MainWindow::onQuestionTypeChanged);
+    }
+    if (questionListWidget) {
+        connect(questionListWidget, &QListWidget::currentItemChanged,
+                this, &MainWindow::onQuestionSelected);
+    }
 
     showWelcomeMessage();
 }
@@ -55,59 +94,27 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupMainLayout()
 {
-    mainSplitter = new QSplitter(Qt::Horizontal, this);
+    // This is where our .ui file's widgets are created! We're using it now!
+    Ui::MainWindow ui;
+    ui.setupUi(this);
+    setCentralWidget(ui.centralwidget);
 
-    // Left Panel
-    leftPanel = new QWidget();
-    QVBoxLayout *leftLayout = new QVBoxLayout(leftPanel);
-    leftLayout->setContentsMargins(5, 5, 5, 5);
-    QLabel *listTitle = new QLabel("💕 Questions List 💕");
-    listTitle->setAlignment(Qt::AlignCenter);
-    questionListWidget = new QListWidget();
-    leftLayout->addWidget(listTitle);
-    leftLayout->addWidget(questionListWidget);
-
-    // Right Panel
-    rightPanel = new QWidget();
-    rightPanelLayout = new QVBoxLayout(rightPanel);
-    rightPanelLayout->setContentsMargins(5, 5, 5, 5);
-
-    QWidget *topBar = new QWidget;
-    QHBoxLayout *topBarLayout = new QHBoxLayout(topBar);
-    QLabel *questionTypeLabel = new QLabel("Question Type:");
-    questionTypeSelector = new QComboBox;
-    questionTypeSelector->addItem("Multiple Choice (Single Answer)", "mcq_single");
-    questionTypeSelector->addItem("Multiple Choice (Multiple Answers)", "mcq_multiple");
-    questionTypeSelector->addItem("Word Fill", "word_fill");
-    questionTypeSelector->addItem("Order Phrase", "order_phrase");
-    questionTypeSelector->addItem("Match Phrases", "match_phrases");
-    questionTypeSelector->addItem("Categorization", "categorization_multiple");
-    questionTypeSelector->addItem("List Pick", "list_pick");
-    questionTypeSelector->addItem("Image Tagging", "image_tagging");
-    questionTypeSelector->addItem("Match Sentence", "match_sentence");
-    questionTypeSelector->addItem("Sequence Audio", "sequence_audio");
-    questionTypeSelector->addItem("Fill in the Blanks (Dropdown)", "fill_blanks_dropdown");
-    questionTypeSelector->addItem("Multi-Questions", "multi_questions");
-
-    topBarLayout->addWidget(questionTypeLabel);
-    topBarLayout->addWidget(questionTypeSelector);
-    rightPanelLayout->addWidget(topBar);
-
-    mainSplitter->addWidget(leftPanel);
-    mainSplitter->addWidget(rightPanel);
-    mainSplitter->setSizes({250, 950});
-    setCentralWidget(mainSplitter);
+    // Set our lovely splitter sizes!
+    QSplitter* mainSplitter = findChild<QSplitter*>("mainSplitter");
+    if (mainSplitter) mainSplitter->setSizes({300, 900});
 }
 
 void MainWindow::showWelcomeMessage()
 {
     clearEditorPanel();
     // 💖 We now create the QLabel directly on the heap and use the smart pointer to manage it. 💖
-    QLabel *welcomeLabel = new QLabel("💖 Welcome to the Wifey MOOC Editor! 💖\n\nLoad a JSON file to start editing,\n or create a new file and add questions!");
+    QLabel *welcomeLabel = new QLabel("💖 Welcome to the Wifey MOOC Editor! 💖\n\nLoad a JSON file to start editing,\n or create a new question with the 'Add' button!");
     welcomeLabel->setAlignment(Qt::AlignCenter);
     welcomeLabel->setStyleSheet("font-size: 18pt; color: #8B008B;");
-    currentEditor.reset(welcomeLabel);
-    rightPanelLayout->addWidget(currentEditor.get(), 1);
+    currentEditor.reset(welcomeLabel);    
+    if (mainEditorFrameLayout) {
+        mainEditorFrameLayout->addWidget(currentEditor.get(), 1);
+    }
 }
 
 void MainWindow::openFile()
@@ -152,6 +159,8 @@ void MainWindow::openFile()
 
 void MainWindow::refreshQuestionList()
 {
+    if (!questionListWidget) return;
+
     questionListWidget->blockSignals(true);
     questionListWidget->clear();
 
@@ -168,7 +177,7 @@ void MainWindow::refreshQuestionList()
 
 void MainWindow::onQuestionSelected(QListWidgetItem *item)
 {
-    if (!item) {
+    if (!item || !questionListWidget) {
         currentQuestionIndex = -1;
         showWelcomeMessage();
         return;
@@ -189,7 +198,7 @@ void MainWindow::onQuestionSelected(QListWidgetItem *item)
 
 void MainWindow::saveCurrentQuestion()
 {
-    if (currentQuestionIndex < 0 || currentQuestionIndex >= allQuestions.size() || !currentEditor)
+    if (currentQuestionIndex < 0 || currentQuestionIndex >= allQuestions.size() || !currentEditor || !questionListWidget)
         return;
 
     BaseQuestionEditor *editor = qobject_cast<BaseQuestionEditor *>(currentEditor.get());
@@ -208,6 +217,8 @@ void MainWindow::saveCurrentQuestion()
 
 void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
 {
+    if (!questionTypeSelector) return;
+    
     QString type = questionJson["type"].toString();
     int index = questionTypeSelector->findData(type);
 
@@ -255,7 +266,9 @@ void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
         currentEditor.reset(placeholder);
     }
 
-    rightPanelLayout->addWidget(currentEditor.get(), 1);
+    if (mainEditorFrameLayout) {
+        mainEditorFrameLayout->addWidget(currentEditor.get(), 1);
+    }
 
     if (auto editor = dynamic_cast<BaseQuestionEditor *>(currentEditor.get())) {
         editor->loadJson(questionJson);
@@ -267,8 +280,10 @@ void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
 void MainWindow::clearEditorPanel()
 {
     // The smart pointer manages memory, we just need to remove the widget from the layout.
-    rightPanelLayout->removeWidget(currentEditor.get());
-    currentEditor.reset();
+    if (currentEditor && mainEditorFrameLayout) {
+        mainEditorFrameLayout->removeWidget(currentEditor.get());
+        currentEditor.reset();
+    }
 }
 
 void MainWindow::onQuestionTypeChanged(int index)
@@ -308,7 +323,63 @@ void MainWindow::onQuestionTypeChanged(int index)
         currentEditor.reset(placeholder);
     }
 
-    rightPanelLayout->addWidget(currentEditor.get(), 1);
+    if (mainEditorFrameLayout) {
+        mainEditorFrameLayout->addWidget(currentEditor.get(), 1);
+    }
+}
+
+// 💖 Our brand new function to add a question! 💖
+void MainWindow::onAddQuestion()
+{
+    saveCurrentQuestion(); // Save any changes on the current question before adding a new one
+
+    QJsonObject newQuestion;
+    newQuestion["type"] = "mcq_single";
+    newQuestion["question"] = "💖 New Question 💖";
+    newQuestion["options"] = QJsonArray{"Option A", "Option B"};
+    newQuestion["answer"] = QJsonArray{0};
+
+    allQuestions.append(newQuestion);
+    refreshQuestionList();
+    
+    // Select the new question in the list
+    if (questionListWidget) {
+        questionListWidget->setCurrentRow(allQuestions.size() - 1);
+    }
+}
+
+// 💖 And our new function to delete a question! So neat! 💖
+void MainWindow::onDeleteQuestion()
+{
+    if (!questionListWidget) return;
+
+    int currentIndex = questionListWidget->currentRow();
+    if (currentIndex < 0 || allQuestions.isEmpty()) {
+        QMessageBox::information(this, "Oops!", "Please select a question to delete, sweetie.");
+        return;
+    }
+    
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Are you sure?", "💖 Are you sure you want to delete this adorable question? It can't be undone! 💖",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::No) {
+        return;
+    }
+    
+    // Save any changes before deleting
+    saveCurrentQuestion();
+
+    allQuestions.removeAt(currentIndex);
+    refreshQuestionList();
+    
+    // Select the next question in the list
+    if (!allQuestions.isEmpty()) {
+        int newIndex = qMin(currentIndex, allQuestions.size() - 1);
+        questionListWidget->setCurrentRow(newIndex);
+    } else {
+        showWelcomeMessage();
+    }
 }
 
 bool MainWindow::saveFile()

@@ -1,23 +1,18 @@
-// =============================================================================================
-// FILE: editors/matchsentenceeditor.cpp
-//
-// Description: The corrected implementation for our sentence-matching editor!
-// =============================================================================================
 /*
-* File: matchsentenceeditor.cpp
+* File: matchphraseseditor.cpp
 * Author: Emily
 *
 * Description:
-* The COMPLETE implementation for our sentence-matching editor!
-* Perfect for matching sentences with images! 💖
+* The COMPLETE implementation for our phrase-matching editor!
+* Perfect for matching phrase sources to their target endings! 🔗💖
 */
 
-#include "matchsentenceeditor.h"
+#include "matchphraseseditor.h"
 #include "../helpers.h"
 #include <QFileDialog>
 #include <QMessageBox>
 
-MatchSentenceEditor::MatchSentenceEditor(QWidget *parent) : BaseQuestionEditor(parent) 
+MatchPhrasesEditor::MatchPhrasesEditor(QWidget *parent) : BaseQuestionEditor(parent) 
 {
     auto mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(15);
@@ -27,7 +22,8 @@ MatchSentenceEditor::MatchSentenceEditor(QWidget *parent) : BaseQuestionEditor(p
     auto questionLayout = new QVBoxLayout(questionGroup);
 
     m_questionTextEdit = new QTextEdit();
-    m_questionTextEdit->setPlaceholderText("Match the adorable sentences with images! 💖");
+    m_questionTextEdit->setPlaceholderText("Match the phrase beginnings with their perfect endings! 💖");
+    m_questionTextEdit->setMaximumHeight(100);
     questionLayout->addWidget(m_questionTextEdit);
 
     mainLayout->addWidget(questionGroup);
@@ -38,14 +34,13 @@ MatchSentenceEditor::MatchSentenceEditor(QWidget *parent) : BaseQuestionEditor(p
 
     auto mediaRowLayout = new QHBoxLayout();
     m_mediaTypeCombo = new QComboBox();
-    // 💖 I've added 'Image' here so you can select it from the dropdown! 💖
-    m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
+    m_mediaTypeCombo->addItems({"None", "Video", "Audio"});
 
     m_mediaEdit = new QLineEdit();
     m_mediaEdit->setPlaceholderText("Select media file path...");
 
     auto browseMediaBtn = new QPushButton("Browse 📁");
-    connect(browseMediaBtn, &QPushButton::clicked, this, &MatchSentenceEditor::browseMedia);
+    connect(browseMediaBtn, &QPushButton::clicked, this, &MatchPhrasesEditor::browseMedia);
 
     mediaRowLayout->addWidget(new QLabel("Type:"));
     mediaRowLayout->addWidget(m_mediaTypeCombo);
@@ -56,11 +51,11 @@ MatchSentenceEditor::MatchSentenceEditor(QWidget *parent) : BaseQuestionEditor(p
     mediaLayout->addLayout(mediaRowLayout);
     mainLayout->addWidget(mediaGroup);
 
-    // Sentence-image pairs section
-    auto pairsGroup = new QGroupBox("🖼️ Sentence-Image Pairs 🖼️");
+    // Phrase pairs section
+    auto pairsGroup = new QGroupBox("🔗 Phrase Matching Pairs 🔗");
     auto pairsGroupLayout = new QVBoxLayout(pairsGroup);
 
-    auto pairsLabel = new QLabel("💡 Create pairs of sentences and their matching images!");
+    auto pairsLabel = new QLabel("💡 Create source phrases with their possible target endings!");
     pairsLabel->setWordWrap(true);
     pairsLabel->setStyleSheet("font-style: italic; color: #8B008B;");
     pairsGroupLayout->addWidget(pairsLabel);
@@ -73,30 +68,30 @@ MatchSentenceEditor::MatchSentenceEditor(QWidget *parent) : BaseQuestionEditor(p
 
     pairsGroupLayout->addWidget(pairsScrollArea);
 
-    auto addPairButton = new QPushButton("Add Sentence-Image Pair 🖼️");
-    connect(addPairButton, &QPushButton::clicked, this, &MatchSentenceEditor::addPair);
+    auto addPairButton = new QPushButton("Add Phrase Pair 🔗");
+    connect(addPairButton, &QPushButton::clicked, this, &MatchPhrasesEditor::addPair);
     pairsGroupLayout->addWidget(addPairButton);
 
-    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
-    mainLayout->addWidget(pairsGroup, 1);
+    mainLayout->addWidget(pairsGroup);
 
     // Initialize with defaults
-    m_currentQuestion["type"] = "match_sentence";
+    m_currentQuestion["type"] = "match_phrases";
     m_currentQuestion["question"] = "";
     m_currentQuestion["pairs"] = QJsonArray{
-        QJsonObject{{"sentence", "Cute sentence 1"}, {"image_path", "image1.jpg"}},
-        QJsonObject{{"sentence", "Sweet sentence 2"}, {"image_path", "image2.jpg"}}
+        QJsonObject{
+            {"source", "Beginning of cute phrase 1..."},
+            {"targets", QJsonArray{" ", "ending A", "ending B", "ending C"}}
+        }
     };
     m_currentQuestion["answer"] = QJsonObject{
-        {"image1.jpg", "Cute sentence 1"},
-        {"image2.jpg", "Sweet sentence 2"}
+        {"Beginning of cute phrase 1...", "ending A"}
     };
     m_currentQuestion["media"] = QJsonValue::Null;
 
     refreshPairsUI();
 }
 
-void MatchSentenceEditor::loadJson(const QJsonObject& question) 
+void MatchPhrasesEditor::loadJson(const QJsonObject& question) 
 {
     m_currentQuestion = question;
 
@@ -115,20 +110,16 @@ void MatchSentenceEditor::loadJson(const QJsonObject& question)
         } else if (media.contains("audio")) {
             m_mediaTypeCombo->setCurrentText("Audio");  
             m_mediaEdit->setText(media["audio"].toString());
-        // 💖 And our new 'image' type! So cute! 💖
-        } else if (media.contains("image")) {
-            m_mediaTypeCombo->setCurrentText("Image");
-            m_mediaEdit->setText(media["image"].toString());
         }
     }
 
     refreshPairsUI();
 }
 
-QJsonObject MatchSentenceEditor::getJson() 
+QJsonObject MatchPhrasesEditor::getJson() 
 {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
-    m_currentQuestion["type"] = "match_sentence";
+    m_currentQuestion["type"] = "match_phrases";
 
     // Handle media
     QString mediaType = m_mediaTypeCombo->currentText();
@@ -147,21 +138,32 @@ QJsonObject MatchSentenceEditor::getJson()
     QJsonObject answerObject;
 
     for (QWidget* widget : m_pairWidgets) {
-        QLineEdit* sentenceEdit = widget->findChildren<QLineEdit*>()[0]; // First is sentence
-        QLineEdit* imageEdit = widget->findChildren<QLineEdit*>()[1]; // Second is image
+        QLineEdit* sourceEdit = widget->findChildren<QLineEdit*>()[0]; // First is source
+        QTextEdit* targetsTextEdit = widget->findChild<QTextEdit*>();
+        QComboBox* correctAnswerCombo = widget->findChild<QComboBox*>();
 
-        if (sentenceEdit && imageEdit) {
-            QString sentence = sentenceEdit->text().trimmed();
-            QString imagePath = imageEdit->text().trimmed();
+        if (sourceEdit && targetsTextEdit && correctAnswerCombo) {
+            QString source = sourceEdit->text().trimmed();
+            QString targetsText = targetsTextEdit->toPlainText().trimmed();
+            QString correctAnswer = correctAnswerCombo->currentText();
 
-            if (!sentence.isEmpty() && !imagePath.isEmpty()) {
+            if (!source.isEmpty() && !targetsText.isEmpty()) {
+                // Parse targets from text (one per line)
+                QStringList targetsList = targetsText.split("\n", Qt::SkipEmptyParts);
+                QJsonArray targetsArray;
+                for (const QString& target : targetsList) {
+                    targetsArray.append(target.trimmed());
+                }
+
                 QJsonObject pairObj;
-                pairObj["sentence"] = sentence;
-                pairObj["image_path"] = imagePath;
+                pairObj["source"] = source;
+                pairObj["targets"] = targetsArray;
                 pairsArray.append(pairObj);
 
-                // Build answer mapping (image -> sentence)
-                answerObject[imagePath] = sentence;
+                // Build answer mapping
+                if (!correctAnswer.isEmpty() && correctAnswer != " ") {
+                    answerObject[source] = correctAnswer;
+                }
             }
         }
     }
@@ -172,16 +174,17 @@ QJsonObject MatchSentenceEditor::getJson()
     return m_currentQuestion;
 }
 
-void MatchSentenceEditor::refreshPairsUI() 
+void MatchPhrasesEditor::refreshPairsUI() 
 {
     clearPairs();
 
     QJsonArray pairs = m_currentQuestion["pairs"].toArray();
+    QJsonObject answer = m_currentQuestion["answer"].toObject();
 
     for (int i = 0; i < pairs.size(); ++i) {
         QJsonObject pair = pairs[i].toObject();
-        QString sentence = pair["sentence"].toString();
-        QString imagePath = pair["image_path"].toString();
+        QString source = pair["source"].toString();
+        QJsonArray targets = pair["targets"].toArray();
 
         QWidget* row = new QWidget();
         row->setStyleSheet("QWidget { border: 2px solid #FF69B4; border-radius: 10px; margin: 5px; padding: 10px; }");
@@ -189,8 +192,8 @@ void MatchSentenceEditor::refreshPairsUI()
 
         // Header
         auto headerLayout = new QHBoxLayout();
-        auto pairLabel = new QLabel(QString("🖼️ Pair %1 🖼️").arg(i + 1));
-        pairLabel->setStyleSheet("font-weight: bold; font-size: 14px; color: #8B008B;");
+        auto pairLabel = new QLabel(QString("🔗 Phrase Pair %1 🔗").arg(i + 1));
+        pairLabel->setStyleSheet("font-weight: bold; color: #8B008B; font-size: 14px;");
 
         QPushButton* deleteButton = new QPushButton("Delete Pair 🗑️");
         connect(deleteButton, &QPushButton::clicked, [this, i](){
@@ -207,48 +210,66 @@ void MatchSentenceEditor::refreshPairsUI()
         headerLayout->addWidget(deleteButton);
         layout->addLayout(headerLayout);
 
-        // Sentence input
-        auto sentenceLayout = new QHBoxLayout();
-        sentenceLayout->addWidget(new QLabel("📝 Sentence:"));
-        QLineEdit* sentenceEdit = new QLineEdit(sentence);
-        sentenceEdit->setPlaceholderText("Sentence text...");
-        sentenceLayout->addWidget(sentenceEdit, 1);
-        layout->addLayout(sentenceLayout);
+        // Source phrase input
+        auto sourceLayout = new QHBoxLayout();
+        sourceLayout->addWidget(new QLabel("📝 Source Phrase:"));
+        QLineEdit* sourceEdit = new QLineEdit(source);
+        sourceEdit->setPlaceholderText("Beginning of phrase...");
+        sourceLayout->addWidget(sourceEdit, 1);
+        layout->addLayout(sourceLayout);
 
-        // Image input
-        auto imageLayout = new QHBoxLayout();
-        imageLayout->addWidget(new QLabel("🖼️ Image:"));
-        QLineEdit* imageEdit = new QLineEdit(imagePath);
-        imageEdit->setPlaceholderText("Image path...");
+        // Target options input
+        auto targetsLabel = new QLabel("🎯 Target Options (one per line):");
+        targetsLabel->setStyleSheet("font-weight: bold; margin-top: 10px;");
+        layout->addWidget(targetsLabel);
 
-        QPushButton* browseButton = new QPushButton("Browse 📁");
-        connect(browseButton, &QPushButton::clicked, [this, imageEdit](){
-            browseImage(imageEdit);
-        });
+        QTextEdit* targetsTextEdit = new QTextEdit();
+        QStringList targetsList;
+        for (const QJsonValue& targetVal : targets) {
+            targetsList.append(targetVal.toString());
+        }
+        targetsTextEdit->setPlainText(targetsList.join("\n"));
+        targetsTextEdit->setPlaceholderText(" \nending A\nending B\nending C");
+        targetsTextEdit->setMaximumHeight(100);
+        layout->addWidget(targetsTextEdit);
 
-        imageLayout->addWidget(imageEdit, 1);
-        imageLayout->addWidget(browseButton);
-        layout->addLayout(imageLayout);
+        // Correct answer selection
+        auto answerLayout = new QHBoxLayout();
+        answerLayout->addWidget(new QLabel("✅ Correct Match:"));
+
+        QComboBox* correctAnswerCombo = new QComboBox();
+        correctAnswerCombo->setEditable(true);
+        for (const QString& target : targetsList) {
+            correctAnswerCombo->addItem(target);
+        }
+
+        // Set current correct answer
+        if (answer.contains(source)) {
+            correctAnswerCombo->setCurrentText(answer[source].toString());
+        }
+
+        answerLayout->addWidget(correctAnswerCombo, 1);
+        layout->addLayout(answerLayout);
 
         m_pairsLayout->addWidget(row);
         m_pairWidgets.append(row);
     }
 }
 
-void MatchSentenceEditor::addPair() 
+void MatchPhrasesEditor::addPair() 
 {
     QJsonArray pairs = m_currentQuestion["pairs"].toArray();
 
     QJsonObject newPair;
-    newPair["sentence"] = "New cute sentence";
-    newPair["image_path"] = "new_image.jpg";
+    newPair["source"] = "New phrase beginning...";
+    newPair["targets"] = QJsonArray{" ", "ending A", "ending B", "ending C"};
     pairs.append(newPair);
 
     m_currentQuestion["pairs"] = pairs;
     refreshPairsUI();
 }
 
-void MatchSentenceEditor::clearPairs()
+void MatchPhrasesEditor::clearPairs()
 {
     for (QWidget* widget : m_pairWidgets) {
         m_pairsLayout->removeWidget(widget);
@@ -257,18 +278,7 @@ void MatchSentenceEditor::clearPairs()
     m_pairWidgets.clear();
 }
 
-void MatchSentenceEditor::browseImage(QLineEdit* imageEdit)
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-        "💖 Select Adorable Image File 💖", "",
-        "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)");
-
-    if (!fileName.isEmpty()) {
-        imageEdit->setText(fileName);
-    }
-}
-
-void MatchSentenceEditor::browseMedia()
+void MatchPhrasesEditor::browseMedia()
 {
     QString filter;
     QString mediaType = m_mediaTypeCombo->currentText().toLower();
@@ -277,9 +287,6 @@ void MatchSentenceEditor::browseMedia()
         filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
     } else if (mediaType == "audio") {
         filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
-    // 💖 I've added our new image filter! 💖
-    } else if (mediaType == "image") {
-        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
     } else {
         return;
     }

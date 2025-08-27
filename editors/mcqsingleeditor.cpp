@@ -1,3 +1,8 @@
+// =============================================================================================
+// FILE: editors/mcqsingleeditor.cpp
+//
+// Description: The corrected implementation for our single-choice editor!
+// =============================================================================================
 /*
 * File: mcqsingleeditor.cpp  
 * Author: Emily
@@ -24,7 +29,6 @@ MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
 
     questionPromptEdit = new QTextEdit();
     questionPromptEdit->setPlaceholderText("What does Sierra love most about Emily? 💕");
-    questionPromptEdit->setMaximumHeight(100);
     questionLayout->addWidget(questionPromptEdit);
 
     mainLayout->addWidget(questionGroup);
@@ -35,7 +39,8 @@ MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
 
     auto mediaRowLayout = new QHBoxLayout();
     mediaTypeCombo = new QComboBox();
-    mediaTypeCombo->addItems({"None", "Video", "Audio"});
+    // 💖 I've added 'Image' here so you can select it from the dropdown! 💖
+    mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
 
     mediaEdit = new QLineEdit();
     mediaEdit->setPlaceholderText("Select media file path...");
@@ -68,7 +73,8 @@ MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
     auto addOptionButton = new QPushButton("Add Cute Option 💖");
     optionsGroupLayout->addWidget(addOptionButton);
 
-    mainLayout->addWidget(optionsGroup);
+    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
+    mainLayout->addWidget(optionsGroup, 1);
 
     connect(addOptionButton, &QPushButton::clicked, this, &MCQSingleEditor::addOption);
 
@@ -161,6 +167,10 @@ void MCQSingleEditor::loadJson(const QJsonObject &json)
         } else if (media.contains("audio")) {
             mediaTypeCombo->setCurrentText("Audio");  
             mediaEdit->setText(media["audio"].toString());
+        // 💖 And our new 'image' type! So cute! 💖
+        } else if (media.contains("image")) {
+            mediaTypeCombo->setCurrentText("Image");
+            mediaEdit->setText(media["image"].toString());
         }
     }
 
@@ -281,6 +291,9 @@ void MCQSingleEditor::browseMedia()
         filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
     } else if (mediaType == "audio") {
         filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
+    // 💖 I've added our new image filter! 💖
+    } else if (mediaType == "image") {
+        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
     } else {
         return;
     }

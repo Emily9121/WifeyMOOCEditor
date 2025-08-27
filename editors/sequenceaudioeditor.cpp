@@ -23,34 +23,34 @@ SequenceAudioEditor::SequenceAudioEditor(QWidget *parent) : BaseQuestionEditor(p
 
     m_questionTextEdit = new QTextEdit();
     m_questionTextEdit->setPlaceholderText("Put these sweet sounds in order! 🎵");
-    m_questionTextEdit->setMaximumHeight(100);
     questionLayout->addWidget(m_questionTextEdit);
 
     mainLayout->addWidget(questionGroup);
 
     // Main audio file section
-    auto audioGroup = new QGroupBox("🎧 Main Audio File 🎧");
-    auto audioLayout = new QVBoxLayout(audioGroup);
+    // 💖 We've made this a generic media group now to handle all types! 💖
+    auto mediaGroup = new QGroupBox("🎧 Main Media File 🎧");
+    auto mediaLayout = new QVBoxLayout(mediaGroup);
 
-    auto audioLabel = new QLabel("💡 Select the main audio file that contains all the sounds to sequence:");
-    audioLabel->setWordWrap(true);
-    audioLabel->setStyleSheet("font-style: italic; color: #8B008B;");
-    audioLayout->addWidget(audioLabel);
+    auto mediaRowLayout = new QHBoxLayout();
 
-    auto audioRowLayout = new QHBoxLayout();
-    audioRowLayout->addWidget(new QLabel("Audio File:"));
+    m_mediaTypeCombo = new QComboBox();
+    m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
 
-    m_mainAudioEdit = new QLineEdit();
-    m_mainAudioEdit->setPlaceholderText("Select main audio file (like: audios/audio3.mp3)");
+    m_mediaEdit = new QLineEdit();
+    m_mediaEdit->setPlaceholderText("Select media file path...");
 
-    auto browseAudioBtn = new QPushButton("Browse Audio 🎵");
-    connect(browseAudioBtn, &QPushButton::clicked, this, &SequenceAudioEditor::browseMainAudio);
+    auto browseMediaBtn = new QPushButton("Browse Media 📁");
+    connect(browseMediaBtn, &QPushButton::clicked, this, &SequenceAudioEditor::browseMedia);
 
-    audioRowLayout->addWidget(m_mainAudioEdit, 1);
-    audioRowLayout->addWidget(browseAudioBtn);
-
-    audioLayout->addLayout(audioRowLayout);
-    mainLayout->addWidget(audioGroup);
+    mediaRowLayout->addWidget(new QLabel("Type:"));
+    mediaRowLayout->addWidget(m_mediaTypeCombo);
+    mediaRowLayout->addWidget(new QLabel("File:"));
+    mediaRowLayout->addWidget(m_mediaEdit, 1);
+    mediaRowLayout->addWidget(browseMediaBtn);
+    
+    mediaLayout->addLayout(mediaRowLayout);
+    mainLayout->addWidget(mediaGroup);
 
     // Audio options section
     auto optionsGroup = new QGroupBox("🎼 Audio Sequence Options 🎼");
@@ -73,7 +73,8 @@ SequenceAudioEditor::SequenceAudioEditor(QWidget *parent) : BaseQuestionEditor(p
     connect(addOptionButton, &QPushButton::clicked, this, &SequenceAudioEditor::addAudioOption);
     optionsGroupLayout->addWidget(addOptionButton);
 
-    mainLayout->addWidget(optionsGroup);
+    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
+    mainLayout->addWidget(optionsGroup, 1);
 
     // Initialize with defaults
     m_currentQuestion["type"] = "sequence_audio";
@@ -96,9 +97,24 @@ void SequenceAudioEditor::loadJson(const QJsonObject& question)
 
     m_questionTextEdit->setText(question["question"].toString());
 
-    // Load main audio file
-    QJsonObject media = question["media"].toObject();
-    m_mainAudioEdit->setText(media["audio"].toString());
+    // Load main media file
+    QJsonValue mediaValue = question["media"];
+    if (mediaValue.isNull()) {
+        m_mediaTypeCombo->setCurrentText("None");
+        m_mediaEdit->clear();
+    } else {
+        QJsonObject media = mediaValue.toObject();
+        if (media.contains("video")) {
+            m_mediaTypeCombo->setCurrentText("Video");
+            m_mediaEdit->setText(media["video"].toString());
+        } else if (media.contains("audio")) {
+            m_mediaTypeCombo->setCurrentText("Audio");  
+            m_mediaEdit->setText(media["audio"].toString());
+        } else if (media.contains("image")) {
+            m_mediaTypeCombo->setCurrentText("Image");
+            m_mediaEdit->setText(media["image"].toString());
+        }
+    }
 
     refreshOptionsUI();
 }
@@ -108,14 +124,16 @@ QJsonObject SequenceAudioEditor::getJson()
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     m_currentQuestion["type"] = "sequence_audio";
 
-    // Save main audio file
-    QString audioPath = m_mainAudioEdit->text().trimmed();
-    if (!audioPath.isEmpty()) {
-        QJsonObject media;
-        media["audio"] = audioPath;
-        m_currentQuestion["media"] = media;
-    } else {
+    // Save main media file
+    QString mediaType = m_mediaTypeCombo->currentText();
+    QString mediaPath = m_mediaEdit->text().trimmed();
+
+    if (mediaType == "None" || mediaPath.isEmpty()) {
         m_currentQuestion["media"] = QJsonValue::Null;
+    } else {
+        QJsonObject media;
+        media[mediaType.toLower()] = mediaPath;
+        m_currentQuestion["media"] = media;
     }
 
     // Save audio options in the current order
@@ -184,7 +202,6 @@ void SequenceAudioEditor::refreshOptionsUI()
         QPushButton* downButton = new QPushButton("↓");
         downButton->setMaximumWidth(30);
         downButton->setEnabled(i < audioOptions.size() - 1);
-        downButton->setToolTip("Move this sound later in sequence");
         connect(downButton, &QPushButton::clicked, [this, i](){
             moveDown(i);
         });
@@ -258,13 +275,25 @@ void SequenceAudioEditor::clearOptions()
     m_optionWidgets.clear();
 }
 
-void SequenceAudioEditor::browseMainAudio()
+void SequenceAudioEditor::browseMedia()
 {
+    QString filter;
+    QString mediaType = m_mediaTypeCombo->currentText().toLower();
+
+    if (mediaType == "video") {
+        filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
+    } else if (mediaType == "audio") {
+        filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
+    } else if (mediaType == "image") {
+        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
+    } else {
+        return;
+    }
+
     QString fileName = QFileDialog::getOpenFileName(this,
-        "💖 Select Cute Audio File 💖", "",
-        "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)");
+        "💖 Select Cute Media File 💖", "", filter);
 
     if (!fileName.isEmpty()) {
-        m_mainAudioEdit->setText(fileName);
+        m_mediaEdit->setText(fileName);
     }
 }

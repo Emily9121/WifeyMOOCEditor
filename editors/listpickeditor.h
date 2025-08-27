@@ -26,6 +26,8 @@ public:
 
 private slots:
     void addOption();
+    // 💖 Our new slot to browse for media! So cute! 💖
+    void browseMedia();
 
 private:
     void refreshOptionsUI();
@@ -34,6 +36,10 @@ private:
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_optionsLayout;
+    
+    // 💖 Our new UI elements for optional media! 💖
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
     // Data storage
     QJsonObject m_currentQuestion;

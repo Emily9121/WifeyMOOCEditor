@@ -23,10 +23,33 @@ ImageTaggingEditor::ImageTaggingEditor(QWidget *parent) : BaseQuestionEditor(par
 
     m_questionTextEdit = new QTextEdit();
     m_questionTextEdit->setPlaceholderText("Tag the cute image! 💖");
-    m_questionTextEdit->setMaximumHeight(80);
     questionLayout->addWidget(m_questionTextEdit);
 
     mainLayout->addWidget(questionGroup);
+
+    // Media section  
+    // 💖 I've added a media section for extra media, as you suggested! 💖
+    auto extraMediaGroup = new QGroupBox("🎬 Extra Media (Optional) 🎬");
+    auto extraMediaLayout = new QVBoxLayout(extraMediaGroup);
+
+    auto extraMediaRowLayout = new QHBoxLayout();
+    m_mediaTypeCombo = new QComboBox();
+    m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
+
+    m_mediaEdit = new QLineEdit();
+    m_mediaEdit->setPlaceholderText("Select media file path...");
+
+    auto browseMediaBtn = new QPushButton("Browse 📁");
+    connect(browseMediaBtn, &QPushButton::clicked, this, &ImageTaggingEditor::browseMedia);
+
+    extraMediaRowLayout->addWidget(new QLabel("Type:"));
+    extraMediaRowLayout->addWidget(m_mediaTypeCombo);
+    extraMediaRowLayout->addWidget(new QLabel("File:"));
+    extraMediaRowLayout->addWidget(m_mediaEdit, 1);
+    extraMediaRowLayout->addWidget(browseMediaBtn);
+
+    extraMediaLayout->addLayout(extraMediaRowLayout);
+    mainLayout->addWidget(extraMediaGroup);
 
     // Main image configuration
     auto mainImageGroup = new QGroupBox("🖼️ Main Image Configuration 🖼️");
@@ -73,17 +96,19 @@ ImageTaggingEditor::ImageTaggingEditor(QWidget *parent) : BaseQuestionEditor(par
     auto addTagButton = new QPushButton("Add Tag 🏷️");
     connect(addTagButton, &QPushButton::clicked, this, &ImageTaggingEditor::addTag);
     mainTagsGroupLayout->addWidget(addTagButton);
-
-    mainLayout->addWidget(mainTagsGroup);
-
+    
+    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
+    mainLayout->addWidget(mainTagsGroup, 1);
+    
     // Alternatives section
     auto alternativesGroup = new QGroupBox("🌈 Alternative Images (Optional) 🌈");
     auto alternativesGroupLayout = new QVBoxLayout(alternativesGroup);
-
+    
     auto altLabel = new QLabel("💡 Add alternative images with their own tag coordinates! Super advanced! ✨");
+    altLabel->setWordWrap(true);
     altLabel->setStyleSheet("font-style: italic; color: #8B008B;");
     alternativesGroupLayout->addWidget(altLabel);
-
+    
     QScrollArea *alternativesScrollArea = new QScrollArea();
     alternativesScrollArea->setWidgetResizable(true);
     alternativesScrollArea->setMinimumHeight(200);
@@ -97,12 +122,14 @@ ImageTaggingEditor::ImageTaggingEditor(QWidget *parent) : BaseQuestionEditor(par
     connect(addAlternativeButton, &QPushButton::clicked, this, &ImageTaggingEditor::addAlternative);
     alternativesGroupLayout->addWidget(addAlternativeButton);
 
-    mainLayout->addWidget(alternativesGroup);
+    mainLayout->addWidget(alternativesGroup, 1);
 
     // Initialize with defaults
     m_currentQuestion["type"] = "image_tagging";
     m_currentQuestion["question"] = "";
     m_currentQuestion["media"] = QJsonObject{{"image", "images/body.jpg"}};
+    // 💖 I've added a new key for optional media so we don't overwrite the main image! 💖
+    m_currentQuestion["optional_media"] = QJsonValue::Null;
     m_currentQuestion["button_label"] = "Alternative View";
     m_currentQuestion["tags"] = QJsonArray{
         QJsonObject{{"label", "Tag 1"}, {"id", "tag1"}},
@@ -207,6 +234,18 @@ QJsonObject ImageTaggingEditor::getJson()
 
     m_currentQuestion["alternatives"] = alternativesArray;
 
+    // Handle optional media
+    QString mediaType = m_mediaTypeCombo->currentText();
+    QString mediaPath = m_mediaEdit->text().trimmed();
+
+    if (mediaType == "None" || mediaPath.isEmpty()) {
+        m_currentQuestion["optional_media"] = QJsonValue::Null;
+    } else {
+        QJsonObject media;
+        media[mediaType.toLower()] = mediaPath;
+        m_currentQuestion["optional_media"] = media;
+    }
+
     return m_currentQuestion;
 }
 
@@ -219,6 +258,25 @@ void ImageTaggingEditor::refreshUI()
     QJsonObject media = m_currentQuestion["media"].toObject();
     m_mainImageEdit->setText(media["image"].toString());
     m_buttonLabelEdit->setText(m_currentQuestion["button_label"].toString());
+    
+    // Load optional media
+    QJsonValue optionalMediaValue = m_currentQuestion["optional_media"];
+    if (optionalMediaValue.isNull()) {
+        m_mediaTypeCombo->setCurrentText("None");
+        m_mediaEdit->clear();
+    } else {
+        QJsonObject media = optionalMediaValue.toObject();
+        if (media.contains("video")) {
+            m_mediaTypeCombo->setCurrentText("Video");
+            m_mediaEdit->setText(media["video"].toString());
+        } else if (media.contains("audio")) {
+            m_mediaTypeCombo->setCurrentText("Audio");
+            m_mediaEdit->setText(media["audio"].toString());
+        } else if (media.contains("image")) {
+            m_mediaTypeCombo->setCurrentText("Image");
+            m_mediaEdit->setText(media["image"].toString());
+        }
+    }
 
     refreshMainTagsUI();
     refreshAlternativesUI();
@@ -487,5 +545,28 @@ void ImageTaggingEditor::browseAlternativeImage(QLineEdit* imageEdit)
 
     if (!fileName.isEmpty()) {
         imageEdit->setText(fileName);
+    }
+}
+
+void ImageTaggingEditor::browseMedia()
+{
+    QString filter;
+    QString mediaType = m_mediaTypeCombo->currentText().toLower();
+
+    if (mediaType == "video") {
+        filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
+    } else if (mediaType == "audio") {
+        filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
+    } else if (mediaType == "image") {
+        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
+    } else {
+        return;
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "💖 Select Cute Media File 💖", "", filter);
+
+    if (!fileName.isEmpty()) {
+        m_mediaEdit->setText(fileName);
     }
 }

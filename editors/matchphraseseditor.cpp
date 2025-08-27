@@ -1,3 +1,8 @@
+// =============================================================================================
+// FILE: editors/matchphraseseditor.cpp
+//
+// Description: The corrected implementation for our phrase-matching editor!
+// =============================================================================================
 /*
 * File: matchphraseseditor.cpp
 * Author: Emily
@@ -23,7 +28,6 @@ MatchPhrasesEditor::MatchPhrasesEditor(QWidget *parent) : BaseQuestionEditor(par
 
     m_questionTextEdit = new QTextEdit();
     m_questionTextEdit->setPlaceholderText("Match the phrase beginnings with their perfect endings! 💖");
-    m_questionTextEdit->setMaximumHeight(100);
     questionLayout->addWidget(m_questionTextEdit);
 
     mainLayout->addWidget(questionGroup);
@@ -34,7 +38,8 @@ MatchPhrasesEditor::MatchPhrasesEditor(QWidget *parent) : BaseQuestionEditor(par
 
     auto mediaRowLayout = new QHBoxLayout();
     m_mediaTypeCombo = new QComboBox();
-    m_mediaTypeCombo->addItems({"None", "Video", "Audio"});
+    // 💖 I've added 'Image' here so you can select it from the dropdown! 💖
+    m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
 
     m_mediaEdit = new QLineEdit();
     m_mediaEdit->setPlaceholderText("Select media file path...");
@@ -72,7 +77,8 @@ MatchPhrasesEditor::MatchPhrasesEditor(QWidget *parent) : BaseQuestionEditor(par
     connect(addPairButton, &QPushButton::clicked, this, &MatchPhrasesEditor::addPair);
     pairsGroupLayout->addWidget(addPairButton);
 
-    mainLayout->addWidget(pairsGroup);
+    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
+    mainLayout->addWidget(pairsGroup, 1);
 
     // Initialize with defaults
     m_currentQuestion["type"] = "match_phrases";
@@ -110,6 +116,10 @@ void MatchPhrasesEditor::loadJson(const QJsonObject& question)
         } else if (media.contains("audio")) {
             m_mediaTypeCombo->setCurrentText("Audio");  
             m_mediaEdit->setText(media["audio"].toString());
+        // 💖 And our new 'image' type! So cute! 💖
+        } else if (media.contains("image")) {
+            m_mediaTypeCombo->setCurrentText("Image");
+            m_mediaEdit->setText(media["image"].toString());
         }
     }
 
@@ -230,7 +240,6 @@ void MatchPhrasesEditor::refreshPairsUI()
         }
         targetsTextEdit->setPlainText(targetsList.join("\n"));
         targetsTextEdit->setPlaceholderText(" \nending A\nending B\nending C");
-        targetsTextEdit->setMaximumHeight(100);
         layout->addWidget(targetsTextEdit);
 
         // Correct answer selection
@@ -287,6 +296,9 @@ void MatchPhrasesEditor::browseMedia()
         filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
     } else if (mediaType == "audio") {
         filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
+    // 💖 I've added our new image filter! 💖
+    } else if (mediaType == "image") {
+        filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
     } else {
         return;
     }

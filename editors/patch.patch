@@ -1,0 +1,181 @@
+--- a/editors/mcqsingleeditor.cpp
++++ b/editors/mcqsingleeditor.cpp
+@@ -52,7 +52,8 @@
+ 
+     auto addOptionButton = new QPushButton("Add Cute Option 💖");
+     optionsGroupLayout->addWidget(addOptionButton);
+-
+-    mainLayout->addWidget(optionsGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(optionsGroup, 1);
+ 
+     connect(addOptionButton, &QPushButton::clicked, this, &MCQSingleEditor::addOption);
+ 
+--- a/editors/mcqmultipleeditor.cpp
++++ b/editors/mcqmultipleeditor.cpp
+@@ -52,7 +52,8 @@
+     auto addOptionButton = new QPushButton("Add Adorable Option 💖");
+     optionsGroupLayout->addWidget(addOptionButton);
+ 
+-    mainLayout->addWidget(optionsGroup, 1);
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(optionsGroup, 1);
+ 
+     connect(addOptionButton, &QPushButton::clicked, this, &McqMultipleEditor::addOption);
+ 
+--- a/editors/wordfilleditor.cpp
++++ b/editors/wordfilleditor.cpp
+@@ -87,7 +87,8 @@
+     auto addAnswerButton = new QPushButton("Add Answer ✏️");
+     connect(addAnswerButton, &QPushButton::clicked, this, &WordFillEditor::addAnswer);
+     answersGroupLayout->addWidget(addAnswerButton);
+-
+-    mainLayout->addWidget(answersGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(answersGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "word_fill";
+--- a/editors/orderphraseeditor.cpp
++++ b/editors/orderphraseeditor.cpp
+@@ -52,7 +52,8 @@
+     auto addPhraseButton = new QPushButton("Add Phrase 📋");
+     connect(addPhraseButton, &QPushButton::clicked, this, &OrderPhraseEditor::addPhrase);
+     phrasesGroupLayout->addWidget(addPhraseButton);
+-
+-    mainLayout->addWidget(phrasesGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(phrasesGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "order_phrase";
+--- a/editors/matchphraseseditor.cpp
++++ b/editors/matchphraseseditor.cpp
+@@ -62,7 +62,8 @@
+     auto addPairButton = new QPushButton("Add Phrase Pair 🔗");
+     connect(addPairButton, &QPushButton::clicked, this, &MatchPhrasesEditor::addPair);
+     pairsGroupLayout->addWidget(addPairButton);
+-
+-    mainLayout->addWidget(pairsGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(pairsGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "match_phrases";
+--- a/editors/categorizationeditor.cpp
++++ b/editors/categorizationeditor.cpp
+@@ -87,7 +87,8 @@
+     auto addStimulusButton = new QPushButton("Add Item 🎯");
+     connect(addStimulusButton, &QPushButton::clicked, this, &CategorizationEditor::addStimulus);
+     stimuliGroupLayout->addWidget(addStimulusButton);
+-
+-    mainLayout->addWidget(stimuliGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(stimuliGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "categorization_multiple";
+--- a/editors/listpickeditor.cpp
++++ b/editors/listpickeditor.cpp
+@@ -52,7 +52,8 @@
+     auto addOptionButton = new QPushButton("Add Option ☑️");
+     connect(addOptionButton, &QPushButton::clicked, this, &ListPickEditor::addOption);
+     optionsGroupLayout->addWidget(addOptionButton);
+-
+-    mainLayout->addWidget(optionsGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(optionsGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "list_pick";
+--- a/editors/matchsentenceeditor.cpp
++++ b/editors/matchsentenceeditor.cpp
+@@ -62,7 +62,8 @@
+     auto addPairButton = new QPushButton("Add Sentence-Image Pair 🖼️");
+     connect(addPairButton, &QPushButton::clicked, this, &MatchSentenceEditor::addPair);
+     pairsGroupLayout->addWidget(addPairButton);
+-
+-    mainLayout->addWidget(pairsGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(pairsGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "match_sentence";
+--- a/editors/multiquestionseditor.cpp
++++ b/editors/multiquestionseditor.cpp
+@@ -52,7 +52,8 @@
+     auto addQuestionButton = new QPushButton("Add Nested Question 🌟");
+     connect(addQuestionButton, &QPushButton::clicked, this, &MultiQuestionsEditor::addNestedQuestion);
+     questionsGroupLayout->addWidget(addQuestionButton);
+-
+-    mainLayout->addWidget(questionsGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(questionsGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "multi_questions";
+--- a/editors/imagetaggingeditor.cpp
++++ b/editors/imagetaggingeditor.cpp
+@@ -87,14 +87,16 @@
+     auto addTagButton = new QPushButton("Add Tag 🏷️");
+     connect(addTagButton, &QPushButton::clicked, this, &ImageTaggingEditor::addTag);
+     mainTagsGroupLayout->addWidget(addTagButton);
+-
+-    mainLayout->addWidget(mainTagsGroup, 1);
++    
++    // We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(mainTagsGroup, 1);
+     
+     // Alternatives section
+     auto alternativesGroup = new QGroupBox("🌈 Alternative Images (Optional) 🌈");
+     auto alternativesGroupLayout = new QVBoxLayout(alternativesGroup);
+-
++    
+     auto altLabel = new QLabel("💡 Add alternative images with their own tag coordinates! Super advanced! ✨");
+     altLabel->setWordWrap(true);
+     altLabel->setStyleSheet("font-style: italic; color: #8B008B;");
+@@ -107,7 +109,7 @@
+     auto addAlternativeButton = new QPushButton("Add Alternative 🌈");
+     connect(addAlternativeButton, &QPushButton::clicked, this, &ImageTaggingEditor::addAlternative);
+     alternativesGroupLayout->addWidget(addAlternativeButton);
+-
++    
+     mainLayout->addWidget(alternativesGroup, 1);
+ 
+     // Initialize with defaults
+--- a/editors/fillblanksdropdowneditor.cpp
++++ b/editors/fillblanksdropdowneditor.cpp
+@@ -87,7 +87,8 @@
+     auto addBlankButton = new QPushButton("Add Dropdown Blank ⬇️");
+     connect(addBlankButton, &QPushButton::clicked, this, &FillBlanksDropdownEditor::addBlank);
+     blanksGroupLayout->addWidget(addBlankButton);
+-
+-    mainLayout->addWidget(blanksGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(blanksGroup, 1);
+ 
+     // Initialize with defaults  
+     m_currentQuestion["type"] = "fill_blanks_dropdown";
+--- a/editors/sequenceaudioeditor.cpp
++++ b/editors/sequenceaudioeditor.cpp
+@@ -62,7 +62,8 @@
+     auto addOptionButton = new QPushButton("Add Audio Option 🎵");
+     connect(addOptionButton, &QPushButton::clicked, this, &SequenceAudioEditor::addAudioOption);
+     optionsGroupLayout->addWidget(addOptionButton);
+-
+-    mainLayout->addWidget(optionsGroup, 1);
++    
++    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
++    mainLayout->addWidget(optionsGroup, 1);
+ 
+     // Initialize with defaults
+     m_currentQuestion["type"] = "sequence_audio";

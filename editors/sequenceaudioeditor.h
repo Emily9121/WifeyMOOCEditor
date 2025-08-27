@@ -26,7 +26,8 @@ public:
 
 private slots:
     void addAudioOption();
-    void browseMainAudio();
+    // 💖 Our new slot to browse for media! 💖
+    void browseMedia();
     void moveUp(int index);
     void moveDown(int index);
 
@@ -37,7 +38,10 @@ private:
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_optionsLayout;
-    QLineEdit* m_mainAudioEdit;
+    
+    // 💖 Our new UI elements for optional media! 💖
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
     // Data storage
     QJsonObject m_currentQuestion;
