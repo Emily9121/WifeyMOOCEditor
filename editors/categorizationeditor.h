@@ -1,44 +1,52 @@
 /*
- * File: categorizationeditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our super-fun categorization editor!
- * I've added a little "purse" (a QJsonObject member variable) for it
- * to hold all the question data! So organized! <3
- */
+* File: categorizationeditor.h  
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our categorization editor!
+* Students drag items into the perfect categories! 📂💖
+*/
 
 #ifndef CATEGORIZATIONEDITOR_H
 #define CATEGORIZATIONEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QJsonObject> // We need this for our purse!
+#include <QtWidgets>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class CategorizationEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit CategorizationEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
-private:
-    // Helper functions to keep the UI fresh and cute!
-    void refreshCategoriesUI();
-    void refreshStimuliUI();
+private slots:
     void addCategory();
     void addStimulus();
+    void browseMedia();
+    void browseStimulusImage(QLineEdit* imageEdit);
+
+private:
+    void refreshCategoriesUI();
+    void refreshStimuliUI();
+    void clearCategories();
+    void clearStimuli();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_categoriesLayout;
     QVBoxLayout* m_stimuliLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // The magical purse to hold our question data!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_categoryWidgets;
+    QList<QWidget*> m_stimuliWidgets;
 };
 
 #endif // CATEGORIZATIONEDITOR_H

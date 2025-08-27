@@ -8,6 +8,10 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "any": "cpp",
+        "compare": "cpp",
+        "format": "cpp",
+        "variant": "cpp"
     }
 }

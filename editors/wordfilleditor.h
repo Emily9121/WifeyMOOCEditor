@@ -1,44 +1,52 @@
 /*
- * File: wordfilleditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our wonderful word-filling editor!
- * I've given it the very last purse we have (a QJsonObject member variable)
- * so it can remember all the words for Sierra's quizzes! <3
- */
+* File: wordfilleditor.h
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our word-filling editor!
+* Now fully functional with sentence parts and answers management,
+* just like our perfect Python version! 💖
+*/
 
 #ifndef WORDFILLEDITOR_H
 #define WORDFILLEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QJsonObject> // The header for our final purse!
+#include <QtWidgets>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class WordFillEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit WordFillEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
+private slots:
+    void addSentencePart();
+    void addAnswer();
+    void browseMedia();
+
 private:
-    // Helper functions to keep the UI looking fab!
     void refreshPartsUI();
     void refreshAnswersUI();
-    void addPart();
-    void addAnswer();
+    void clearParts();
+    void clearAnswers();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_partsLayout;
     QVBoxLayout* m_answersLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // The final purse for our last forgetful editor!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_partsWidgets;
+    QList<QWidget*> m_answersWidgets;
 };
 
 #endif // WORDFILLEDITOR_H

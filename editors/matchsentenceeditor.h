@@ -1,41 +1,47 @@
 /*
- * File: matchsentenceeditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our lovely sentence-matching editor!
- * I've given it its own special purse (a QJsonObject member variable)
- * and all the right names so it's not confused anymore! <3
- */
+* File: matchsentenceeditor.h
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our sentence-matching editor!
+* Students match sentences with adorable image paths! 💖
+*/
 
 #ifndef MATCHSENTENCEEDITOR_H
 #define MATCHSENTENCEEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QJsonObject> // The header for our purse!
+#include <QtWidgets>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class MatchSentenceEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit MatchSentenceEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
+private slots:
+    void addPair();
+    void browseMedia();
+    void browseImage(QLineEdit* imageEdit);
+
 private:
-    // Helper functions to keep the UI beautiful!
-    void refreshSentencesUI();
-    void addSentence();
+    void refreshPairsUI();
+    void clearPairs();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
-    QVBoxLayout* m_sentencesLayout;
+    QVBoxLayout* m_pairsLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // The brand new purse for our sentence editor!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_pairWidgets;
 };
 
 #endif // MATCHSENTENCEEDITOR_H

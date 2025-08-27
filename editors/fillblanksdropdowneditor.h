@@ -1,44 +1,51 @@
 /*
- * File: fillblanksdropdowneditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our super cute fill-in-the-blanks editor!
- * I've given it its very own little purse (a QJsonObject member variable)
- * to hold all the question data for Sierra! So neat and tidy! <3
- */
+* File: fillblanksdropdowneditor.h
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our fill-blanks dropdown editor!
+* Students choose from adorable dropdown menus! ⬇️💖
+*/
 
 #ifndef FILLBLANKSDROPDOWNEDITOR_H
 #define FILLBLANKSDROPDOWNEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QJsonObject> // The header for our cute purse!
+#include <QtWidgets>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class FillBlanksDropdownEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit FillBlanksDropdownEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
+private slots:
+    void addSentencePart();
+    void addBlank();
+    void browseMedia();
+
 private:
-    // Helper functions to keep our UI sparkling!
     void refreshPartsUI();
     void refreshBlanksUI();
-    void addPart();
-    void addBlank();
+    void clearParts();
+    void clearBlanks();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_partsLayout;
     QVBoxLayout* m_blanksLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // The all-important purse for our question data!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_partsWidgets;
+    QList<QWidget*> m_blanksWidgets;
 };
 
 #endif // FILLBLANKSDROPDOWNEDITOR_H

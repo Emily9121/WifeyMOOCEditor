@@ -1,56 +1,124 @@
-# ----------------------------------------------------
-# This is the project file for our super cute editor!
-# It tells Qt which files to build. It's very important!
-# ----------------------------------------------------
+#
+# 💖 WifeyMOOC Editor C++ Edition Project File 💖
+# Created with love and lots of pink! ✨
+# 
 
-QT       += core gui
-QT       += widgets
+QT += core widgets
 
-CONFIG   += c++17
+CONFIG += c++17
+CONFIG += console
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-
-# The name of the final executable
 TARGET = WifeyMOOCEditor
+TEMPLATE = app
 
-# All the C++ source files that are part of the project
+# Define the application version
+VERSION = 2.1.0
+
+# Application info
+QMAKE_TARGET_COMPANY = "Emily's Adorable Software"
+QMAKE_TARGET_PRODUCT = "WifeyMOOC JSON Editor"
+QMAKE_TARGET_DESCRIPTION = "The cutest quiz editor ever created! 💖"
+QMAKE_TARGET_COPYRIGHT = "Copyright (c) 2025 Emily"
+
+# Source files - all our perfectly fixed editors! ✨
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    editors/basequestioneditor.cpp \
+    editors/mcqsingleeditor.cpp \
+    editors/mcqmultipleeditor.cpp \
+    editors/wordfilleditor.cpp \
+    editors/imagetaggingeditor.cpp \
+    editors/matchsentenceeditor.cpp \
+    editors/multiquestionseditor.cpp \
     editors/categorizationeditor.cpp \
     editors/fillblanksdropdowneditor.cpp \
-    editors/imagetaggingeditor.cpp \
     editors/listpickeditor.cpp \
     editors/matchphraseseditor.cpp \
-    editors/matchsentenceeditor.cpp \
-    editors/mcqmultipleeditor.cpp \
-    editors/mcqsingleeditor.cpp \
-    editors/multiquestionseditor.cpp \
     editors/orderphraseeditor.cpp \
-    editors/sequenceaudioeditor.cpp \
-    editors/wordfilleditor.cpp
+    editors/sequenceaudioeditor.cpp
 
-# All the header files that are part of the project
+# Header files - all the adorable declarations! 💕
 HEADERS += \
     mainwindow.h \
     helpers.h \
-    basequestioneditor.h \
+    editors/basequestioneditor.h \
+    editors/mcqsingleeditor.h \
+    editors/mcqmultipleeditor.h \
+    editors/wordfilleditor.h \
+    editors/imagetaggingeditor.h \
+    editors/matchsentenceeditor.h \
+    editors/multiquestionseditor.h \
     editors/categorizationeditor.h \
     editors/fillblanksdropdowneditor.h \
-    editors/imagetaggingeditor.h \
     editors/listpickeditor.h \
     editors/matchphraseseditor.h \
-    editors/matchsentenceeditor.h \
-    editors/mcqmultipleeditor.h \
-    editors/mcqsingleeditor.h \
-    editors/multiquestionseditor.h \
     editors/orderphraseeditor.h \
-    editors/sequenceaudioeditor.h \
-    editors/wordfilleditor.h
+    editors/sequenceaudioeditor.h
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+# Include paths for our cute headers
+INCLUDEPATH += . editors
+
+# Build configuration - make it perfect! ✨
+CONFIG(debug, debug|release) {
+    DESTDIR = debug
+    OBJECTS_DIR = debug/obj
+    MOC_DIR = debug/moc
+    RCC_DIR = debug/rcc
+} else {
+    DESTDIR = release
+    OBJECTS_DIR = release/obj
+    MOC_DIR = release/moc
+    RCC_DIR = release/rcc
+}
+
+# Compiler flags for extra cuteness and safety! 🛡️
+QMAKE_CXXFLAGS += -Wall -Wextra
+
+# Platform-specific settings
+win32 {
+    # Windows-specific settings
+    CONFIG += windows
+    QMAKE_CXXFLAGS += -std=c++17
+}
+
+unix:!macx {
+    # Linux-specific settings
+    QMAKE_CXXFLAGS += -std=c++17
+}
+
+macx {
+    # macOS-specific settings - make it extra pretty on Mac! 🍎
+    QMAKE_CXXFLAGS += -std=c++17
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
+
+    # Bundle configuration
+    QMAKE_INFO_PLIST = Info.plist
+    ICON = wifeymooc_icon.icns
+}
+
+# Installation paths (optional)
+target.path = /usr/local/bin
+INSTALLS += target
+
+# Define preprocessor macros
+DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += APP_VERSION=\"$$VERSION\"
+
+# Enable all Qt modules we need
+QT += gui widgets core
+
+# Make sure we use the correct Qt version
+lessThan(QT_MAJOR_VERSION, 5): error("This project requires Qt 5.0 or later")
+
+# Resource files (if you have icons, etc.)
+# RESOURCES += resources.qrc
+
+# Translations (if you want multi-language support)
+# TRANSLATIONS += translations/wifeymooc_en.ts translations/wifeymooc_fr.ts
+
+# Additional clean files
+QMAKE_CLEAN += $(TARGET)
+
+# Print a cute message during build! 💖
+message("Building the most adorable quiz editor ever! 💖✨")

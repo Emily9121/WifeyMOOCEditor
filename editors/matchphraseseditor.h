@@ -1,41 +1,46 @@
 /*
- * File: matchphraseseditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our super-smart phrase-matching editor!
- * I've given it a lovely new purse (a QJsonObject member variable)
- * so it can remember all the matching pairs for Sierra! <3
- */
+* File: matchphraseseditor.h
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our phrase-matching editor!
+* Students match phrase beginnings with their perfect endings! 🔗💖
+*/
 
 #ifndef MATCHPHRASESEDITOR_H
 #define MATCHPHRASESEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QJsonObject> // The header for our purse!
+#include <QtWidgets>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class MatchPhrasesEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit MatchPhrasesEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
-private:
-    // Helper functions to keep the UI cute and updated!
-    void refreshPairsUI();
+private slots:
     void addPair();
+    void browseMedia();
+
+private:
+    void refreshPairsUI();
+    void clearPairs();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_pairsLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // The brand new purse for our forgetful editor!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_pairWidgets;
 };
 
 #endif // MATCHPHRASESEDITOR_H

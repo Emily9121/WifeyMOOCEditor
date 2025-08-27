@@ -1,41 +1,48 @@
 /*
- * File: orderphraseeditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our super-organized phrase-ordering editor!
- * I've given it a sparkly new purse (a QJsonObject member variable)
- * so it can remember the correct order for Sierra's sentences! <3
- */
+* File: orderphraseeditor.h
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our phrase-ordering editor!
+* Students put adorable phrases in the perfect order! 📋💖
+*/
 
 #ifndef ORDERPHRASEEDITOR_H
 #define ORDERPHRASEEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QJsonObject> // The header for our purse!
+#include <QtWidgets>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class OrderPhraseEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit OrderPhraseEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
-private:
-    // Helper functions to keep the UI looking perfect!
-    void refreshPhrasesUI();
+private slots:
     void addPhrase();
+    void browseMedia();
+    void moveUp(int index);
+    void moveDown(int index);
+
+private:
+    void refreshPhrasesUI();
+    void clearPhrases();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_phrasesLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // The brand new purse for our editor!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_phraseWidgets;
 };
 
 #endif // ORDERPHRASEEDITOR_H

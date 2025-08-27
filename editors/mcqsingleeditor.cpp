@@ -1,156 +1,255 @@
 /*
- * File: mcqsingleeditor.cpp
- * Author: Emily
- *
- * Description:
- * The implementation for our single-choice editor! I've included the
- * missing recipe book for QJsonArray and fixed the button connection!
- * It's perfect now and ready to make quizzes for your wifey! <3
- */
+* File: mcqsingleeditor.cpp  
+* Author: Emily
+*
+* Description:
+* The COMPLETE implementation for our single-choice editor! Now supports
+* both simple string options AND complex image+text options, plus media
+* files, just like our perfect Python version! 💕
+*/
 
 #include "mcqsingleeditor.h"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QScrollArea>
-#include <QDebug>
-#include <QJsonArray> // The missing recipe book!
-#include <QJsonValue> // And its best friend!
+#include "../helpers.h"
+#include <QFileDialog>
+#include <QMessageBox>
 
 MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
 {
-    // Main layout for this editor
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    auto mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(15);
 
-    // --- Question Prompt Area ---
-    QGroupBox *promptGroup = new QGroupBox("Question Prompt");
-    QVBoxLayout *promptLayout = new QVBoxLayout(promptGroup);
+    // Question prompt section - so cute! 💖
+    auto questionGroup = new QGroupBox("❓ Question Prompt ❓");
+    auto questionLayout = new QVBoxLayout(questionGroup);
+
     questionPromptEdit = new QTextEdit();
     questionPromptEdit->setPlaceholderText("What does Sierra love most about Emily? 💕");
-    promptLayout->addWidget(questionPromptEdit);
-    mainLayout->addWidget(promptGroup);
+    questionPromptEdit->setMaximumHeight(100);
+    questionLayout->addWidget(questionPromptEdit);
 
-    // --- Options Area with a ScrollArea ---
-    QGroupBox *optionsGroup = new QGroupBox("Answer Options");
-    QVBoxLayout *optionsGroupLayout = new QVBoxLayout(optionsGroup);
-    
+    mainLayout->addWidget(questionGroup);
+
+    // Media section - for videos and audio! 🎵
+    auto mediaGroup = new QGroupBox("🎬 Media (Optional) 🎬");
+    auto mediaLayout = new QVBoxLayout(mediaGroup);
+
+    auto mediaRowLayout = new QHBoxLayout();
+    mediaTypeCombo = new QComboBox();
+    mediaTypeCombo->addItems({"None", "Video", "Audio"});
+
+    mediaEdit = new QLineEdit();
+    mediaEdit->setPlaceholderText("Select media file path...");
+
+    auto browseMediaBtn = new QPushButton("Browse 📁");
+    connect(browseMediaBtn, &QPushButton::clicked, this, &MCQSingleEditor::browseMedia);
+
+    mediaRowLayout->addWidget(new QLabel("Type:"));
+    mediaRowLayout->addWidget(mediaTypeCombo);
+    mediaRowLayout->addWidget(new QLabel("File:"));
+    mediaRowLayout->addWidget(mediaEdit, 1);
+    mediaRowLayout->addWidget(browseMediaBtn);
+
+    mediaLayout->addLayout(mediaRowLayout);
+    mainLayout->addWidget(mediaGroup);
+
+    // Answer options section - the main event! ✨
+    auto optionsGroup = new QGroupBox("💎 Answer Options (Pick one!) 💎");  
+    auto optionsGroupLayout = new QVBoxLayout(optionsGroup);
+
     QScrollArea *scrollArea = new QScrollArea();
     scrollArea->setWidgetResizable(true);
-    
     QWidget *scrollWidget = new QWidget();
-    optionsLayout = new QVBoxLayout(scrollWidget); // This is where we'll add options
+    optionsLayout = new QVBoxLayout(scrollWidget);
     optionsLayout->setSpacing(10);
-    
     scrollArea->setWidget(scrollWidget);
+
     optionsGroupLayout->addWidget(scrollArea);
 
-    // --- Buttons to Add/Remove Options ---
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    QPushButton *addOptionButton = new QPushButton("Add Option");
-    
-    buttonLayout->addWidget(addOptionButton);
-    buttonLayout->addStretch();
-    optionsGroupLayout->addLayout(buttonLayout);
+    auto addOptionButton = new QPushButton("Add Cute Option 💖");
+    optionsGroupLayout->addWidget(addOptionButton);
 
     mainLayout->addWidget(optionsGroup);
 
-    // --- Connections ---
-    // Now it connects to our new, simple slot! Yay!
     connect(addOptionButton, &QPushButton::clicked, this, &MCQSingleEditor::addOption);
 
-    // Start with a couple of default options for a new question
+    // Initialize with default options
+    m_currentQuestion["type"] = "mcq_single";
+    m_currentQuestion["question"] = "";
+    m_currentQuestion["options"] = QJsonArray();
+    m_currentQuestion["answer"] = QJsonArray{0};
+    m_currentQuestion["media"] = QJsonValue::Null;
+
+    // Add some default options to start
     addOption();
     addOption();
 }
 
 void MCQSingleEditor::addOption()
 {
-    // This new function is called by the button, and it calls our helper!
     createOptionRow();
 }
 
-void MCQSingleEditor::createOptionRow(bool correct, const QString &text, const QString &feedback)
+void MCQSingleEditor::createOptionRow(bool correct, const QString &text, const QString &image)
 {
-    // A container for a single option's widgets
     QWidget *optionWidget = new QWidget();
-    QHBoxLayout *layout = new QHBoxLayout(optionWidget);
-    layout->setContentsMargins(0,0,0,0);
+    auto layout = new QVBoxLayout(optionWidget);
+    layout->setContentsMargins(5, 5, 5, 5);
+
+    // First row: radio button and text
+    auto topRow = new QHBoxLayout();
 
     QRadioButton *radioButton = new QRadioButton();
     radioButton->setChecked(correct);
-    
-    QLineEdit *textEdit = new QLineEdit(text);
-    textEdit->setPlaceholderText("Option text...");
-    
-    QLineEdit *feedbackEdit = new QLineEdit(feedback);
-    feedbackEdit->setPlaceholderText("Feedback for this option (optional)...");
-    
-    QPushButton *removeButton = new QPushButton("Remove");
 
-    layout->addWidget(radioButton);
-    layout->addWidget(textEdit, 1); // Stretch text edit
-    layout->addWidget(feedbackEdit, 1); // Stretch feedback edit
-    layout->addWidget(removeButton);
+    QLineEdit *textEdit = new QLineEdit(text);
+    textEdit->setPlaceholderText("Option text (like: Macaron à la framboise)...");
+
+    QPushButton *removeButton = new QPushButton("Remove 🗑️");
+
+    topRow->addWidget(radioButton);
+    topRow->addWidget(new QLabel("Text:"));
+    topRow->addWidget(textEdit, 1);
+    topRow->addWidget(removeButton);
+
+    // Second row: image path
+    auto bottomRow = new QHBoxLayout();
+
+    QLineEdit *imageEdit = new QLineEdit(image);
+    imageEdit->setPlaceholderText("Image path (like: images/32.jpg) - optional");
+
+    QPushButton *browseButton = new QPushButton("Browse Image 🖼️");
+    connect(browseButton, &QPushButton::clicked, [this, imageEdit]() {
+        browseImage(imageEdit);
+    });
+
+    bottomRow->addWidget(new QLabel("Image:"));
+    bottomRow->addWidget(imageEdit, 1);
+    bottomRow->addWidget(browseButton);
+
+    layout->addLayout(topRow);
+    layout->addLayout(bottomRow);
 
     optionsLayout->addWidget(optionWidget);
     optionWidgets.append(optionWidget);
 
-    // Connect the remove button to a lambda that removes this specific option
     connect(removeButton, &QPushButton::clicked, [this, optionWidget]() {
-        optionsLayout->removeWidget(optionWidget);
-        optionWidgets.removeOne(optionWidget);
-        optionWidget->deleteLater();
+        if (optionWidgets.size() > 1) {
+            optionsLayout->removeWidget(optionWidget);
+            optionWidgets.removeOne(optionWidget);
+            optionWidget->deleteLater();
+        }
     });
 }
 
-
 void MCQSingleEditor::loadJson(const QJsonObject &json)
 {
-    // Load the question prompt
+    m_currentQuestion = json;
+
+    // Load question text
     questionPromptEdit->setText(json["question"].toString());
 
-    // Clear any existing default options
+    // Load media
+    QJsonValue mediaValue = json["media"];
+    if (mediaValue.isNull()) {
+        mediaTypeCombo->setCurrentText("None");
+        mediaEdit->clear();
+    } else {
+        QJsonObject media = mediaValue.toObject();
+        if (media.contains("video")) {
+            mediaTypeCombo->setCurrentText("Video");
+            mediaEdit->setText(media["video"].toString());
+        } else if (media.contains("audio")) {
+            mediaTypeCombo->setCurrentText("Audio");  
+            mediaEdit->setText(media["audio"].toString());
+        }
+    }
+
     clearOptions();
 
-    // Load the options from the JSON array
     QJsonArray options = json["options"].toArray();
-    for (const QJsonValue &value : options) {
-        QJsonObject optionObj = value.toObject();
-        // It now calls our helper function!
-        createOptionRow(
-            optionObj["correct"].toBool(),
-            optionObj["text"].toString(),
-            optionObj["feedback"].toString()
-        );
+    QJsonArray answer = json["answer"].toArray();
+
+    int correctAnswerIndex = -1;
+    if (!answer.isEmpty()) {
+        correctAnswerIndex = answer[0].toInt(-1);
+    }
+
+    for (int i = 0; i < options.size(); ++i) {
+        QJsonValue optionValue = options[i];
+
+        QString text, image;
+        if (optionValue.isString()) {
+            // Simple string option
+            text = optionValue.toString();
+        } else if (optionValue.isObject()) {
+            // Complex option with text and image
+            QJsonObject optionObj = optionValue.toObject();
+            text = optionObj["text"].toString();
+            image = optionObj["image"].toString();
+        }
+
+        createOptionRow(i == correctAnswerIndex, text, image);
+    }
+
+    // If no options were loaded, add defaults
+    if (options.isEmpty()) {
+        addOption();
+        addOption();
     }
 }
 
 QJsonObject MCQSingleEditor::getJson()
 {
-    QJsonObject questionJson;
-    questionJson["type"] = "mcq-single";
-    questionJson["question"] = questionPromptEdit->toPlainText();
+    m_currentQuestion["question"] = questionPromptEdit->toPlainText();
+    m_currentQuestion["type"] = "mcq_single";
+
+    // Handle media
+    QString mediaType = mediaTypeCombo->currentText();
+    QString mediaPath = mediaEdit->text().trimmed();
+
+    if (mediaType == "None" || mediaPath.isEmpty()) {
+        m_currentQuestion["media"] = QJsonValue::Null;
+    } else {
+        QJsonObject media;
+        media[mediaType.toLower()] = mediaPath;
+        m_currentQuestion["media"] = media;
+    }
 
     QJsonArray optionsArray;
-    for (QWidget *widget : optionWidgets) {
-        QJsonObject optionObj;
-        QRadioButton *radioButton = widget->findChild<QRadioButton*>();
-        QList<QLineEdit*> lineEdits = widget->findChildren<QLineEdit*>();
+    int correctAnswerIndex = -1;
 
-        if (radioButton && lineEdits.size() == 2) {
-            optionObj["text"] = lineEdits.at(0)->text();
-            optionObj["correct"] = radioButton->isChecked();
-            optionObj["feedback"] = lineEdits.at(1)->text();
-            optionsArray.append(optionObj);
+    for (int i = 0; i < optionWidgets.size(); ++i) {
+        QWidget *widget = optionWidgets[i];
+
+        QRadioButton *radioButton = widget->findChild<QRadioButton*>();
+        QLineEdit *textEdit = widget->findChildren<QLineEdit*>()[0]; // First is text
+        QLineEdit *imageEdit = widget->findChildren<QLineEdit*>()[1]; // Second is image
+
+        if (radioButton && textEdit && imageEdit) {
+            QString text = textEdit->text().trimmed();
+            QString image = imageEdit->text().trimmed();
+
+            if (image.isEmpty()) {
+                // Simple string option
+                optionsArray.append(text);
+            } else {
+                // Complex option with text and image
+                QJsonObject optionObj;
+                optionObj["text"] = text;
+                optionObj["image"] = image;
+                optionsArray.append(optionObj);
+            }
+
+            if (radioButton->isChecked()) {
+                correctAnswerIndex = i;
+            }
         }
     }
-    questionJson["options"] = optionsArray;
 
-    return questionJson;
+    m_currentQuestion["options"] = optionsArray;
+    m_currentQuestion["answer"] = QJsonArray{correctAnswerIndex >= 0 ? correctAnswerIndex : 0};
+
+    return m_currentQuestion;
 }
 
 void MCQSingleEditor::clearOptions()
@@ -159,5 +258,37 @@ void MCQSingleEditor::clearOptions()
         QWidget *widget = optionWidgets.takeFirst();
         optionsLayout->removeWidget(widget);
         widget->deleteLater();
+    }
+}
+
+void MCQSingleEditor::browseImage(QLineEdit* imageEdit)
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "💖 Select Adorable Image File 💖", "",
+        "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)");
+
+    if (!fileName.isEmpty()) {
+        imageEdit->setText(fileName);
+    }
+}
+
+void MCQSingleEditor::browseMedia()
+{
+    QString filter;
+    QString mediaType = mediaTypeCombo->currentText().toLower();
+
+    if (mediaType == "video") {
+        filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
+    } else if (mediaType == "audio") {
+        filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
+    } else {
+        return;
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "💖 Select Cute Media File 💖", "", filter);
+
+    if (!fileName.isEmpty()) {
+        mediaEdit->setText(fileName);
     }
 }

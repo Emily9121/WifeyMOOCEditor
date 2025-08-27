@@ -3,9 +3,8 @@
  * Author: Emily
  *
  * Description:
- * This is the 1000% correct file! I found the sneaky ninja bug!
- * The class was named McqMultipleEditor (little q) but we were calling
- * MCQMultipleEditor (big Q)! I fixed it! This will work now! <3
+ * The COMPLETE and SAFE main window implementation with the missing onQuestionTypeChanged() slot.
+ * Added robust widget management to fix all crashes when switching questions. 💖
  */
 
 #include "mainwindow.h"
@@ -22,87 +21,381 @@
 #include "editors/fillblanksdropdowneditor.h"
 #include "editors/multiquestionseditor.h"
 
-
-#include <QFile>
 #include <QFileDialog>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QMessageBox>
-#include <QVBoxLayout>
-#include <QComboBox>
 #include <QLabel>
-#include <QMenuBar>
-#include <QMenu>
-#include <QAction>
-#include <QApplication>
-#include <QStyleFactory>
-#include <QDebug>
-#include <QFileInfo>
+#include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
-// I fixed the order here to make the compiler happy! So organized!
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), centralAreaWidget(new QWidget), currentEditor(nullptr)
+    : QMainWindow(parent), currentEditor(nullptr), currentQuestionIndex(-1)
 {
-    // Set up the main window with a cute title!
     setWindowTitle("💖 Wifey MOOC Editor C++ Edition 💖");
-    setMinimumSize(1000, 700);
-
-    // Create the main layout
-    mainLayout = new QVBoxLayout(centralAreaWidget);
-
-    // --- Top Bar for selecting question type ---
-    QWidget* topBar = new QWidget;
-    QHBoxLayout* topBarLayout = new QHBoxLayout(topBar);
-
-    QLabel* questionTypeLabel = new QLabel("Question Type:");
-    questionTypeSelector = new QComboBox;
-    questionTypeSelector->addItem("Multiple Choice (Single Answer)", "mcq-single");
-    questionTypeSelector->addItem("Multiple Choice (Multiple Answers)", "mcq-multiple");
-    questionTypeSelector->addItem("Word Fill", "word-fill");
-    questionTypeSelector->addItem("Order Phrase", "order-phrase");
-    questionTypeSelector->addItem("Match Phrases", "match-phrases");
-    questionTypeSelector->addItem("Categorization", "categorization");
-    questionTypeSelector->addItem("List Pick", "list-pick");
-    questionTypeSelector->addItem("Image Tagging", "image-tagging");
-    questionTypeSelector->addItem("Match Sentence", "match-sentence");
-    questionTypeSelector->addItem("Sequence Audio", "sequence-audio");
-    questionTypeSelector->addItem("Fill in the Blanks (Dropdown)", "fill-blanks-dropdown");
-    questionTypeSelector->addItem("Multi-Questions", "multi-questions");
-
-    topBarLayout->addWidget(questionTypeLabel);
-    topBarLayout->addWidget(questionTypeSelector);
-    mainLayout->addWidget(topBar);
-
-    // --- Editor Area ---
-    editorContainer = new QWidget();
-    editorLayout = new QVBoxLayout(editorContainer);
-    mainLayout->addWidget(editorContainer, 1); // Give it stretch factor
-
-    setCentralWidget(centralAreaWidget);
-
-    // --- Create Actions and Menus ---
+    setMinimumSize(1200, 800);
+    setupMainLayout();
     createActions();
     createMenus();
-    
-    // Connect the selector to a function that changes the editor
-    connect(questionTypeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onQuestionTypeChanged);
-
-    // Initialize with a default new editor
-    onQuestionTypeChanged(0);
-    
-    // Apply our super cute stylesheet!
     applyStylesheet();
+
+    connect(questionTypeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onQuestionTypeChanged);
+    connect(questionListWidget, &QListWidget::currentItemChanged,
+            this, &MainWindow::onQuestionSelected);
+
+    showWelcomeMessage();
 }
 
 MainWindow::~MainWindow()
 {
-    // No need to delete currentEditor separately if it has a parent
+}
+
+void MainWindow::setupMainLayout()
+{
+    mainSplitter = new QSplitter(Qt::Horizontal, this);
+
+    // Left Panel
+    leftPanel = new QWidget();
+    QVBoxLayout *leftLayout = new QVBoxLayout(leftPanel);
+    leftLayout->setContentsMargins(5, 5, 5, 5);
+    QLabel *listTitle = new QLabel("💕 Questions List 💕");
+    listTitle->setAlignment(Qt::AlignCenter);
+    questionListWidget = new QListWidget();
+    leftLayout->addWidget(listTitle);
+    leftLayout->addWidget(questionListWidget);
+
+    // Right Panel
+    rightPanel = new QWidget();
+    rightPanelLayout = new QVBoxLayout(rightPanel);
+    rightPanelLayout->setContentsMargins(5, 5, 5, 5);
+
+    QWidget *topBar = new QWidget;
+    QHBoxLayout *topBarLayout = new QHBoxLayout(topBar);
+    QLabel *questionTypeLabel = new QLabel("Question Type:");
+    questionTypeSelector = new QComboBox;
+    questionTypeSelector->addItem("Multiple Choice (Single Answer)", "mcq_single");
+    questionTypeSelector->addItem("Multiple Choice (Multiple Answers)", "mcq_multiple");
+    questionTypeSelector->addItem("Word Fill", "word_fill");
+    questionTypeSelector->addItem("Order Phrase", "order_phrase");
+    questionTypeSelector->addItem("Match Phrases", "match_phrases");
+    questionTypeSelector->addItem("Categorization", "categorization_multiple");
+    questionTypeSelector->addItem("List Pick", "list_pick");
+    questionTypeSelector->addItem("Image Tagging", "image_tagging");
+    questionTypeSelector->addItem("Match Sentence", "match_sentence");
+    questionTypeSelector->addItem("Sequence Audio", "sequence_audio");
+    questionTypeSelector->addItem("Fill in the Blanks (Dropdown)", "fill_blanks_dropdown");
+    questionTypeSelector->addItem("Multi-Questions", "multi_questions");
+
+    topBarLayout->addWidget(questionTypeLabel);
+    topBarLayout->addWidget(questionTypeSelector);
+    rightPanelLayout->addWidget(topBar);
+
+    mainSplitter->addWidget(leftPanel);
+    mainSplitter->addWidget(rightPanel);
+    mainSplitter->setSizes({250, 950});
+    setCentralWidget(mainSplitter);
+}
+
+void MainWindow::showWelcomeMessage()
+{
+    clearEditorPanel();
+    QLabel *welcomeLabel = new QLabel("💖 Welcome to the Wifey MOOC Editor! 💖\n\nLoad a JSON file to start editing,\n or create a new file and add questions!");
+    welcomeLabel->setAlignment(Qt::AlignCenter);
+    welcomeLabel->setStyleSheet("font-size: 18pt; color: #8B008B;");
+    rightPanelLayout->addWidget(welcomeLabel, 1);
+    currentEditor = welcomeLabel;
+}
+
+void MainWindow::openFile()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Question File"), "", tr("JSON Files (*.json);;All Files (*)"));
+    if (filePath.isEmpty())
+        return;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Could not open file for reading.");
+        return;
+    }
+
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
+    if (doc.isNull() || !doc.isArray()) {
+        QMessageBox::warning(this, "Error", "Invalid JSON file. File must contain an array of questions.");
+        return;
+    }
+
+    allQuestions.clear();
+    QJsonArray questionArray = doc.array();
+    for (const QJsonValue &value : questionArray) {
+        if (value.isObject()) {
+            allQuestions.append(value.toObject());
+        }
+    }
+
+    currentFilePath = filePath;
+    setWindowTitle(QString("💖 %1 - Wifey MOOC Editor 💖").arg(QFileInfo(filePath).fileName()));
+
+    refreshQuestionList();
+    if (!allQuestions.isEmpty()) {
+        questionListWidget->setCurrentRow(0);
+    } else {
+        showWelcomeMessage();
+    }
+}
+
+void MainWindow::refreshQuestionList()
+{
+    questionListWidget->blockSignals(true);
+    questionListWidget->clear();
+
+    for (int i = 0; i < allQuestions.size(); ++i) {
+        QJsonObject q = allQuestions[i];
+        QString type = q["type"].toString("unknown");
+        QString text = q["question"].toString("No question text.");
+        if (text.length() > 30)
+            text = text.left(30) + "...";
+        questionListWidget->addItem(QString("%1. [%2] %3").arg(i + 1).arg(type).arg(text));
+    }
+    questionListWidget->blockSignals(false);
+}
+
+void MainWindow::onQuestionSelected(QListWidgetItem *item)
+{
+    if (!item) {
+        currentQuestionIndex = -1;
+        showWelcomeMessage();
+        return;
+    }
+
+    saveCurrentQuestion();
+
+    int index = questionListWidget->row(item);
+    if (index < 0 || index >= allQuestions.size()) {
+        currentQuestionIndex = -1;
+        showWelcomeMessage();
+        return;
+    }
+
+    currentQuestionIndex = index;
+    loadEditorForQuestion(allQuestions[index]);
+}
+
+void MainWindow::saveCurrentQuestion()
+{
+    if (currentQuestionIndex < 0 || currentQuestionIndex >= allQuestions.size() || !currentEditor)
+        return;
+
+    BaseQuestionEditor *editor = qobject_cast<BaseQuestionEditor *>(currentEditor);
+    if (!editor)
+        return;
+
+    allQuestions[currentQuestionIndex] = editor->getJson();
+    refreshQuestionList();
+    questionListWidget->setCurrentRow(currentQuestionIndex);
+}
+
+void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
+{
+    QString type = questionJson["type"].toString();
+    int index = questionTypeSelector->findData(type);
+
+    if (index == -1) {
+        QMessageBox::warning(this, "Unsupported Type",
+                             QString("Question type '%1' is not supported.").arg(type));
+        showWelcomeMessage();
+        return;
+    }
+
+    questionTypeSelector->blockSignals(true);
+    questionTypeSelector->setCurrentIndex(index);
+    questionTypeSelector->blockSignals(false);
+
+    clearEditorPanel();
+
+    if (type == "mcq_single")
+        currentEditor = new MCQSingleEditor(this);
+    else if (type == "mcq_multiple")
+        currentEditor = new McqMultipleEditor(this);
+    else if (type == "word_fill")
+        currentEditor = new WordFillEditor(this);
+    else if (type == "order_phrase")
+        currentEditor = new OrderPhraseEditor(this);
+    else if (type == "match_phrases")
+        currentEditor = new MatchPhrasesEditor(this);
+    else if (type == "categorization_multiple")
+        currentEditor = new CategorizationEditor(this);
+    else if (type == "list_pick")
+        currentEditor = new ListPickEditor(this);
+    else if (type == "image_tagging")
+        currentEditor = new ImageTaggingEditor(this);
+    else if (type == "match_sentence")
+        currentEditor = new MatchSentenceEditor(this);
+    else if (type == "sequence_audio")
+        currentEditor = new SequenceAudioEditor(this);
+    else if (type == "fill_blanks_dropdown")
+        currentEditor = new FillBlanksDropdownEditor(this);
+    else if (type == "multi_questions")
+        currentEditor = new MultiQuestionsEditor(this);
+    else {
+        QLabel *placeholder = new QLabel(QString("Editor for '%1' coming soon! ✨").arg(type), this);
+        placeholder->setAlignment(Qt::AlignCenter);
+        currentEditor = placeholder;
+    }
+
+    rightPanelLayout->addWidget(currentEditor, 1);
+
+    if (auto editor = qobject_cast<BaseQuestionEditor *>(currentEditor)) {
+        editor->loadJson(questionJson);
+    } else {
+        showWelcomeMessage();
+    }
+}
+
+void MainWindow::clearEditorPanel()
+{
+    if (currentEditor) {
+        rightPanelLayout->removeWidget(currentEditor);
+        currentEditor->deleteLater();
+        currentEditor = nullptr;
+    }
+}
+
+void MainWindow::onQuestionTypeChanged(int index)
+{
+    clearEditorPanel();
+
+    QString type = questionTypeSelector->itemData(index).toString();
+
+    if (type == "mcq_single")
+        currentEditor = new MCQSingleEditor(this);
+    else if (type == "mcq_multiple")
+        currentEditor = new McqMultipleEditor(this);
+    else if (type == "word_fill")
+        currentEditor = new WordFillEditor(this);
+    else if (type == "order_phrase")
+        currentEditor = new OrderPhraseEditor(this);
+    else if (type == "match_phrases")
+        currentEditor = new MatchPhrasesEditor(this);
+    else if (type == "categorization_multiple")
+        currentEditor = new CategorizationEditor(this);
+    else if (type == "list_pick")
+        currentEditor = new ListPickEditor(this);
+    else if (type == "image_tagging")
+        currentEditor = new ImageTaggingEditor(this);
+    else if (type == "match_sentence")
+        currentEditor = new MatchSentenceEditor(this);
+    else if (type == "sequence_audio")
+        currentEditor = new SequenceAudioEditor(this);
+    else if (type == "fill_blanks_dropdown")
+        currentEditor = new FillBlanksDropdownEditor(this);
+    else if (type == "multi_questions")
+        currentEditor = new MultiQuestionsEditor(this);
+    else {
+        QLabel *placeholder = new QLabel(QString("Editor for '%1' coming soon! ✨").arg(type), this);
+        placeholder->setAlignment(Qt::AlignCenter);
+        currentEditor = placeholder;
+    }
+
+    rightPanelLayout->addWidget(currentEditor, 1);
+}
+
+bool MainWindow::saveFile()
+{
+    if (currentFilePath.isEmpty())
+        return saveFileAs();
+
+    return saveToFile(currentFilePath);
+}
+
+bool MainWindow::saveFileAs()
+{
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Question File"), "", tr("JSON Files (*.json);;All Files (*)"));
+    if (filePath.isEmpty())
+        return false;
+
+    return saveToFile(filePath);
+}
+
+bool MainWindow::saveToFile(const QString &filePath)
+{
+    saveCurrentQuestion();
+
+    QJsonArray questionArray;
+    for (const QJsonObject &q : allQuestions) {
+        questionArray.append(q);
+    }
+
+    QJsonDocument doc(questionArray);
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Could not open file for writing.");
+        return false;
+    }
+
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    currentFilePath = filePath;
+    setWindowTitle(QString("💖 %1 - Wifey MOOC Editor 💖").arg(QFileInfo(filePath).fileName()));
+    QMessageBox::information(this, "Success!", "File saved successfully! 💕");
+    return true;
+}
+
+void MainWindow::newFile()
+{
+    if (!allQuestions.isEmpty()) {
+        if (QMessageBox::question(this, "New File", "Are you sure you want to create a new file? All unsaved changes will be lost!", QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+            return;
+    }
+
+    allQuestions.clear();
+    currentFilePath.clear();
+    currentQuestionIndex = -1;
+    refreshQuestionList();
+    showWelcomeMessage();
+    setWindowTitle("💖 New Question File - Wifey MOOC Editor 💖");
+}
+
+void MainWindow::createActions()
+{
+    newAction = new QAction(tr("&New"), this);
+    newAction->setShortcuts(QKeySequence::New);
+    connect(newAction, &QAction::triggered, this, &MainWindow::newFile);
+
+    openAction = new QAction(tr("&Open..."), this);
+    openAction->setShortcuts(QKeySequence::Open);
+    connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
+
+    saveAction = new QAction(tr("&Save"), this);
+    saveAction->setShortcuts(QKeySequence::Save);
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+
+    saveAsAction = new QAction(tr("Save &As..."), this);
+    saveAsAction->setShortcuts(QKeySequence::SaveAs);
+    connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveFileAs);
+
+    exitAction = new QAction(tr("E&xit"), this);
+    exitAction->setShortcuts(QKeySequence::Quit);
+    connect(exitAction, &QAction::triggered, this, &QWidget::close);
+}
+
+void MainWindow::createMenus()
+{
+    fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(newAction);
+    fileMenu->addAction(openAction);
+    fileMenu->addAction(saveAction);
+    fileMenu->addAction(saveAsAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAction);
 }
 
 void MainWindow::applyStylesheet()
 {
-    // A cute pink stylesheet inspired by our Python app! <3
-    QString style = R"(
+    QString style =R"(
         QMainWindow {
             background-color: #FFB6C1; /* Light Pink */
         }
@@ -154,201 +447,13 @@ void MainWindow::applyStylesheet()
             padding: 0 3px;
             background-color: #FFB6C1;
         }
+        QListWidget {
+            background-color: #FFEFD5;
+            border: 1px solid #FFC0CB;
+        }
+        QSplitter::handle {
+            background-color: #FF69B4;
+        }
     )";
     this->setStyleSheet(style);
-}
-
-
-void MainWindow::createActions()
-{
-    newAction = new QAction(tr("&New"), this);
-    newAction->setShortcuts(QKeySequence::New);
-    connect(newAction, &QAction::triggered, this, &MainWindow::newFile);
-
-    openAction = new QAction(tr("&Open..."), this);
-    openAction->setShortcuts(QKeySequence::Open);
-    connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
-
-    saveAction = new QAction(tr("&Save"), this);
-    saveAction->setShortcuts(QKeySequence::Save);
-    connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
-
-    saveAsAction = new QAction(tr("Save &As..."), this);
-    saveAsAction->setShortcuts(QKeySequence::SaveAs);
-    connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveFileAs);
-
-    exitAction = new QAction(tr("E&xit"), this);
-    exitAction->setShortcuts(QKeySequence::Quit);
-    connect(exitAction, &QAction::triggered, this, &QWidget::close);
-}
-
-void MainWindow::createMenus()
-{
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(newAction);
-    fileMenu->addAction(openAction);
-    fileMenu->addAction(saveAction);
-    fileMenu->addAction(saveAsAction);
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAction);
-}
-
-void MainWindow::newFile()
-{
-    currentFilePath.clear();
-    // Just switch to the default editor type
-    questionTypeSelector->setCurrentIndex(0);
-    onQuestionTypeChanged(0); 
-    setWindowTitle("💖 New Question - Wifey MOOC Editor 💖");
-}
-
-void MainWindow::openFile()
-{
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Question File"), "", tr("JSON Files (*.json);;All Files (*)"));
-    if (filePath.isEmpty()) {
-        return;
-    }
-
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Could not open file for reading.");
-        return;
-    }
-
-    QByteArray fileData = file.readAll();
-    file.close();
-
-    QJsonDocument doc = QJsonDocument::fromJson(fileData);
-    if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::warning(this, "Error", "Invalid JSON file.");
-        return;
-    }
-
-    QJsonObject questionJson = doc.object();
-    loadEditorForQuestion(questionJson);
-    currentFilePath = filePath;
-    setWindowTitle(QString("💖 %1 - Wifey MOOC Editor 💖").arg(QFileInfo(filePath).fileName()));
-}
-
-bool MainWindow::saveFile()
-{
-    if (currentFilePath.isEmpty()) {
-        return saveFileAs();
-    }
-    return saveToFile(currentFilePath);
-}
-
-bool MainWindow::saveFileAs()
-{
-    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Question File"), "", tr("JSON Files (*.json);;All Files (*)"));
-    if (filePath.isEmpty()) {
-        return false;
-    }
-    return saveToFile(filePath);
-}
-
-bool MainWindow::saveToFile(const QString &filePath)
-{
-    // Safely cast the current editor to our base class
-    BaseQuestionEditor* editor = qobject_cast<BaseQuestionEditor*>(currentEditor);
-
-    if (!editor) {
-        QMessageBox::warning(this, "Error", "Cannot save this question type yet, sweetie!");
-        return false;
-    }
-
-    QJsonObject questionJson = editor->getJson();
-    QJsonDocument doc(questionJson);
-
-    QFile file(filePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Could not open file for writing.");
-        return false;
-    }
-
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    currentFilePath = filePath;
-    setWindowTitle(QString("💖 %1 - Wifey MOOC Editor 💖").arg(QFileInfo(filePath).fileName()));
-    QMessageBox::information(this, "Success!", "File saved successfully, babe! 💕");
-    return true;
-}
-
-
-void MainWindow::clearCurrentEditor()
-{
-    if (currentEditor) {
-        editorLayout->removeWidget(currentEditor);
-        currentEditor->deleteLater();
-        currentEditor = nullptr;
-    }
-}
-
-void MainWindow::onQuestionTypeChanged(int index)
-{
-    QString type = questionTypeSelector->itemData(index).toString();
-    
-    clearCurrentEditor();
-
-    // This big block creates the right editor for the question type!
-    if (type == "mcq-single") {
-        currentEditor = new MCQSingleEditor(this);
-    } else if (type == "mcq-multiple") {
-        currentEditor = new McqMultipleEditor(this); // <-- Fixed the name here!
-    } else if (type == "word-fill") {
-        currentEditor = new WordFillEditor(this);
-    } else if (type == "order-phrase") {
-        currentEditor = new OrderPhraseEditor(this);
-    } else if (type == "match-phrases") {
-        currentEditor = new MatchPhrasesEditor(this);
-    } else if (type == "categorization") {
-        currentEditor = new CategorizationEditor(this);
-    } else if (type == "list-pick") {
-        currentEditor = new ListPickEditor(this);
-    } else if (type == "image-tagging") {
-        currentEditor = new ImageTaggingEditor(this);
-    } else if (type == "match-sentence") {
-        currentEditor = new MatchSentenceEditor(this);
-    } else if (type == "sequence-audio") {
-        currentEditor = new SequenceAudioEditor(this);
-    } else if (type == "fill-blanks-dropdown") {
-        currentEditor = new FillBlanksDropdownEditor(this);
-    } else if (type == "multi-questions") {
-        currentEditor = new MultiQuestionsEditor(this);
-    }
-    else {
-         // Fallback for any unexpected types, just in case!
-        QLabel* placeholder = new QLabel(QString("Editor for '%1' is coming soon, princess! ✨").arg(type));
-        placeholder->setAlignment(Qt::AlignCenter);
-        currentEditor = placeholder;
-    }
-
-    if (currentEditor) {
-        editorLayout->addWidget(currentEditor);
-    }
-}
-
-void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
-{
-    QString type = questionJson["type"].toString();
-    if (type.isEmpty()) {
-        QMessageBox::warning(this, "Error", "JSON file does not contain a 'type' field.");
-        return;
-    }
-
-    int index = questionTypeSelector->findData(type);
-    if (index != -1) {
-        // This will trigger onQuestionTypeChanged to create the right editor
-        questionTypeSelector->setCurrentIndex(index);
-        
-        // Now we cast and load the data into the newly created editor
-        if (BaseQuestionEditor* editor = qobject_cast<BaseQuestionEditor*>(currentEditor)) {
-            editor->loadJson(questionJson);
-        } else {
-             qDebug() << "Could not cast current editor to BaseQuestionEditor to load data.";
-        }
-    } else {
-        QMessageBox::warning(this, "Unsupported Type", QString("Question type '%1' is not supported.").arg(type));
-    }
 }

@@ -1,52 +1,47 @@
 /*
- * File: mcqmultipleeditor.h
- * Author: Emily
- *
- * Description:
- * The header file for our super-fun multiple-choice, multiple-answer editor!
- * I've given it a beautiful new purse and a whole diary full of instructions
- * so it knows exactly what to do! So smart! <3
- */
+* File: mcqmultipleeditor.h
+* Author: Emily
+*
+* Description:
+* The COMPLETE header file for our multiple-choice, multiple-answer editor!
+* Students can pick many adorable options! ☑️💖
+*/
 
 #ifndef MCQMULTIPLEEDITOR_H
 #define MCQMULTIPLEEDITOR_H
 
 #include "../basequestioneditor.h"
-#include <QTextEdit>
-#include <QVBoxLayout>
+#include <QtWidgets>
 #include <QJsonObject>
-#include <QList>
-#include <QWidget>
-#include <QLineEdit>
-#include <QCheckBox>
+#include <QJsonArray>
 
 class McqMultipleEditor : public BaseQuestionEditor
 {
     Q_OBJECT
+
 public:
     explicit McqMultipleEditor(QWidget *parent = nullptr);
-
     void loadJson(const QJsonObject &json) override;
     QJsonObject getJson() override;
 
 private slots:
-    // A slot to add a new option, so cute!
     void addOption();
+    void browseImage(QLineEdit* imageEdit);
+    void browseMedia();
 
 private:
-    // Helper to keep the UI fresh and sparkly!
-    void refreshOptionsUI();
+    void createOptionRow(bool correct = false, const QString &text = "", const QString &image = "");
     void clearOptions();
 
     // UI Elements
     QTextEdit* m_questionTextEdit;
     QVBoxLayout* m_optionsLayout;
+    QLineEdit* m_mediaEdit;
+    QComboBox* m_mediaTypeCombo;
 
-    // A list to keep all our little option widgets together!
-    QList<QWidget*> m_optionWidgets;
-
-    // The magical purse to hold our question data!
+    // Data storage
     QJsonObject m_currentQuestion;
+    QList<QWidget*> m_optionWidgets;
 };
 
 #endif // MCQMULTIPLEEDITOR_H
