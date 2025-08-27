@@ -6,6 +6,7 @@
  * The COMPLETE and SAFE main window implementation with the missing onQuestionTypeChanged() slot.
  * Now with a proper QSplitter layout to fix sizing issues and prevent crashes. 💖
  * With working Add and Delete question buttons! So functional and cute! ✨
+ * This version also correctly handles relative media paths, so you can share quizzes easily! 🌟
  */
 
 #include "mainwindow.h"
@@ -43,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent)
     applyStylesheet();
 
     // Find our cute widgets from the UI file and connect them! 
-    // We're doing this after setupUi() to make sure they exist!
     newButton = findChild<QPushButton*>("newButton");
     saveButton = findChild<QPushButton*>("saveButton");
     deleteButton = findChild<QPushButton*>("deleteButton");
@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (saveButton) connect(saveButton, &QPushButton::clicked, this, &MainWindow::saveFile);
     if (deleteButton) connect(deleteButton, &QPushButton::clicked, this, &MainWindow::onDeleteQuestion);
 
-    // 💖 We need to add all the question types to the dropdown here! This was the missing piece! 💖
+    // We need to add all the question types to the dropdown here!
     if (questionTypeSelector) {
         questionTypeSelector->addItem("Multiple Choice (Single Answer)", "mcq_single");
         questionTypeSelector->addItem("Multiple Choice (Multiple Answers)", "mcq_multiple");
@@ -94,12 +94,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupMainLayout()
 {
-    // This is where our .ui file's widgets are created! We're using it now!
     Ui::MainWindow ui;
     ui.setupUi(this);
     setCentralWidget(ui.centralwidget);
 
-    // Set our lovely splitter sizes!
     QSplitter* mainSplitter = findChild<QSplitter*>("mainSplitter");
     if (mainSplitter) mainSplitter->setSizes({300, 900});
 }
@@ -107,7 +105,6 @@ void MainWindow::setupMainLayout()
 void MainWindow::showWelcomeMessage()
 {
     clearEditorPanel();
-    // 💖 We now create the QLabel directly on the heap and use the smart pointer to manage it. 💖
     QLabel *welcomeLabel = new QLabel("💖 Welcome to the Wifey MOOC Editor! 💖\n\nLoad a JSON file to start editing,\n or create a new question with the 'Add' button!");
     welcomeLabel->setAlignment(Qt::AlignCenter);
     welcomeLabel->setStyleSheet("font-size: 18pt; color: #8B008B;");
@@ -235,7 +232,6 @@ void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
 
     clearEditorPanel();
 
-    // 💖 Now we're creating a new object on the heap and using reset() to assign it to the unique_ptr! 💖
     if (type == "mcq_single")
         currentEditor.reset(new MCQSingleEditor(this));
     else if (type == "mcq_multiple")
@@ -279,7 +275,6 @@ void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
 
 void MainWindow::clearEditorPanel()
 {
-    // The smart pointer manages memory, we just need to remove the widget from the layout.
     if (currentEditor && mainEditorFrameLayout) {
         mainEditorFrameLayout->removeWidget(currentEditor.get());
         currentEditor.reset();
@@ -292,7 +287,6 @@ void MainWindow::onQuestionTypeChanged(int index)
 
     QString type = questionTypeSelector->itemData(index).toString();
 
-    // 💖 Now we're creating a new object on the heap and using reset() to assign it to the unique_ptr! 💖
     if (type == "mcq_single")
         currentEditor.reset(new MCQSingleEditor(this));
     else if (type == "mcq_multiple")
@@ -328,10 +322,9 @@ void MainWindow::onQuestionTypeChanged(int index)
     }
 }
 
-// 💖 Our brand new function to add a question! 💖
 void MainWindow::onAddQuestion()
 {
-    saveCurrentQuestion(); // Save any changes on the current question before adding a new one
+    saveCurrentQuestion();
 
     QJsonObject newQuestion;
     newQuestion["type"] = "mcq_single";
@@ -342,13 +335,11 @@ void MainWindow::onAddQuestion()
     allQuestions.append(newQuestion);
     refreshQuestionList();
     
-    // Select the new question in the list
     if (questionListWidget) {
         questionListWidget->setCurrentRow(allQuestions.size() - 1);
     }
 }
 
-// 💖 And our new function to delete a question! So neat! 💖
 void MainWindow::onDeleteQuestion()
 {
     if (!questionListWidget) return;
@@ -367,13 +358,11 @@ void MainWindow::onDeleteQuestion()
         return;
     }
     
-    // Save any changes before deleting
     saveCurrentQuestion();
 
     allQuestions.removeAt(currentIndex);
     refreshQuestionList();
     
-    // Select the next question in the list
     if (!allQuestions.isEmpty()) {
         int newIndex = qMin(currentIndex, allQuestions.size() - 1);
         questionListWidget->setCurrentRow(newIndex);
@@ -403,9 +392,53 @@ bool MainWindow::saveToFile(const QString &filePath)
 {
     saveCurrentQuestion();
 
+    // 💖 We need to save the media paths as relative paths! 💖
     QJsonArray questionArray;
+    QFileInfo fileInfo(filePath);
+    QString saveDirectory = fileInfo.dir().path();
+
     for (const QJsonObject &q : allQuestions) {
-        questionArray.append(q);
+        QJsonObject newQuestion = q; // Work with a copy!
+        
+        // Handle single media file
+        if (newQuestion.contains("media") && newQuestion["media"].isObject()) {
+            QJsonObject media = newQuestion["media"].toObject();
+            QJsonObject newMedia;
+
+            for (const QString& key : media.keys()) {
+                if (media[key].isString()) {
+                    QString absolutePath = media[key].toString();
+                    QString relativePath = QDir(saveDirectory).relativeFilePath(absolutePath);
+                    newMedia[key] = relativePath;
+                }
+            }
+            newQuestion["media"] = newMedia;
+        }
+
+        // Handle image_tagging alternatives
+        if (newQuestion.contains("alternatives") && newQuestion["alternatives"].isArray()) {
+            QJsonArray alternatives = newQuestion["alternatives"].toArray();
+            QJsonArray newAlternatives;
+            for (const QJsonValue& altVal : alternatives) {
+                QJsonObject altObj = altVal.toObject();
+                if (altObj.contains("media") && altObj["media"].isObject()) {
+                    QJsonObject media = altObj["media"].toObject();
+                    QJsonObject newMedia;
+                    for (const QString& key : media.keys()) {
+                         if (media[key].isString()) {
+                            QString absolutePath = media[key].toString();
+                            QString relativePath = QDir(saveDirectory).relativeFilePath(absolutePath);
+                            newMedia[key] = relativePath;
+                        }
+                    }
+                    altObj["media"] = newMedia;
+                }
+                newAlternatives.append(altObj);
+            }
+            newQuestion["alternatives"] = newAlternatives;
+        }
+
+        questionArray.append(newQuestion);
     }
 
     QJsonDocument doc(questionArray);
