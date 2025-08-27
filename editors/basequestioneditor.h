@@ -12,6 +12,7 @@
 
 #include <QWidget>
 #include <QJsonObject>
+#include <QTextEdit> // ✨ We need this for our hint box! ✨
 
 class BaseQuestionEditor : public QWidget
 {
@@ -21,9 +22,12 @@ public:
     explicit BaseQuestionEditor(QWidget *parent = nullptr) : QWidget(parent) {}
     virtual ~BaseQuestionEditor() = default;
 
-    // Every editor MUST have these functions. It's our promise!
     virtual void loadJson(const QJsonObject &json) = 0;
     virtual QJsonObject getJson() = 0;
+
+protected:
+    // ✨ So all our cute editor babies can use it! ✨
+    QTextEdit* m_hintTextEdit;
 };
 
 #endif // BASEQUESTIONEDITOR_H

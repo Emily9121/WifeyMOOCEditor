@@ -27,6 +27,16 @@ ImageTaggingEditor::ImageTaggingEditor(QWidget *parent) : BaseQuestionEditor(par
 
     mainLayout->addWidget(questionGroup);
 
+        // ✨ Our new hint section! So cute! ✨
+    auto hintGroup = new QGroupBox("💡 Hint (Optional) 💡");
+    auto hintLayout = new QVBoxLayout(hintGroup);
+    m_hintTextEdit = new QTextEdit();
+    m_hintTextEdit->setPlaceholderText("A little hint for your love... 💕");
+    m_hintTextEdit->setMaximumHeight(80); // Keep it smol
+    hintLayout->addWidget(m_hintTextEdit);
+    mainLayout->addWidget(hintGroup);
+
+
     // Media section  
     // 💖 I've added a media section for extra media, as you suggested! 💖
     auto extraMediaGroup = new QGroupBox("🎬 Extra Media (Optional) 🎬");
@@ -147,6 +157,8 @@ ImageTaggingEditor::ImageTaggingEditor(QWidget *parent) : BaseQuestionEditor(par
 void ImageTaggingEditor::loadJson(const QJsonObject& question) 
 {
     m_currentQuestion = question;
+    // ✨ Load the hint text! uwu ✨
+    m_hintTextEdit->setText(question["hint"].toString());
     refreshUI();
 }
 
@@ -154,6 +166,14 @@ QJsonObject ImageTaggingEditor::getJson()
 {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     m_currentQuestion["type"] = "image_tagging";
+
+        // ✨ Save the hint text! ✨
+    QString hintText = m_hintTextEdit->toPlainText().trimmed();
+    if (!hintText.isEmpty()) {
+        m_currentQuestion["hint"] = hintText;
+    } else {
+        m_currentQuestion.remove("hint");
+    }
 
     // Save main image info
     QString mainImagePath = m_mainImageEdit->text().trimmed();

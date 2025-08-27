@@ -32,6 +32,16 @@ MatchPhrasesEditor::MatchPhrasesEditor(QWidget *parent) : BaseQuestionEditor(par
 
     mainLayout->addWidget(questionGroup);
 
+        // ✨ Our new hint section! So cute! ✨
+    auto hintGroup = new QGroupBox("💡 Hint (Optional) 💡");
+    auto hintLayout = new QVBoxLayout(hintGroup);
+    m_hintTextEdit = new QTextEdit();
+    m_hintTextEdit->setPlaceholderText("A little hint for your love... 💕");
+    m_hintTextEdit->setMaximumHeight(80); // Keep it smol
+    hintLayout->addWidget(m_hintTextEdit);
+    mainLayout->addWidget(hintGroup);
+
+
     // Media section  
     auto mediaGroup = new QGroupBox("🎬 Media (Optional) 🎬");
     auto mediaLayout = new QVBoxLayout(mediaGroup);
@@ -103,6 +113,9 @@ void MatchPhrasesEditor::loadJson(const QJsonObject& question)
 
     m_questionTextEdit->setText(question["question"].toString());
 
+        // ✨ Load the hint text! ✨
+    m_hintTextEdit->setText(question["hint"].toString());
+
     // Load media
     QJsonValue mediaValue = question["media"];
     if (mediaValue.isNull()) {
@@ -130,6 +143,14 @@ QJsonObject MatchPhrasesEditor::getJson()
 {
     m_currentQuestion["question"] = m_questionTextEdit->toPlainText();
     m_currentQuestion["type"] = "match_phrases";
+
+        // ✨ Save the hint text! ✨
+    QString hintText = m_hintTextEdit->toPlainText().trimmed();
+    if (!hintText.isEmpty()) {
+        m_currentQuestion["hint"] = hintText;
+    } else {
+        m_currentQuestion.remove("hint");
+    }
 
     // Handle media
     QString mediaType = m_mediaTypeCombo->currentText();

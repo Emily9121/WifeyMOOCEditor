@@ -33,6 +33,16 @@ MCQSingleEditor::MCQSingleEditor(QWidget *parent) : BaseQuestionEditor(parent)
 
     mainLayout->addWidget(questionGroup);
 
+        // ✨ Our new hint section! So cute! ✨
+    auto hintGroup = new QGroupBox("💡 Hint (Optional) 💡");
+    auto hintLayout = new QVBoxLayout(hintGroup);
+    m_hintTextEdit = new QTextEdit();
+    m_hintTextEdit->setPlaceholderText("A little hint for your love... 💕");
+    m_hintTextEdit->setMaximumHeight(80); // Keep it smol
+    hintLayout->addWidget(m_hintTextEdit);
+    mainLayout->addWidget(hintGroup);
+
+
     // Media section - for videos and audio! 🎵
     auto mediaGroup = new QGroupBox("🎬 Media (Optional) 🎬");
     auto mediaLayout = new QVBoxLayout(mediaGroup);
@@ -147,15 +157,18 @@ void MCQSingleEditor::createOptionRow(bool correct, const QString &text, const Q
     });
 }
 
-void MCQSingleEditor::loadJson(const QJsonObject &json)
+void MCQSingleEditor::loadJson(const QJsonObject &question)
 {
-    m_currentQuestion = json;
+    m_currentQuestion = question;
 
     // Load question text
-    questionPromptEdit->setText(json["question"].toString());
+    questionPromptEdit->setText(question["question"].toString());
+
+        // ✨ Load the hint text! ✨
+    m_hintTextEdit->setText(question["hint"].toString());
 
     // Load media
-    QJsonValue mediaValue = json["media"];
+    QJsonValue mediaValue = question["media"];
     if (mediaValue.isNull()) {
         mediaTypeCombo->setCurrentText("None");
         mediaEdit->clear();
@@ -176,8 +189,8 @@ void MCQSingleEditor::loadJson(const QJsonObject &json)
 
     clearOptions();
 
-    QJsonArray options = json["options"].toArray();
-    QJsonArray answer = json["answer"].toArray();
+    QJsonArray options = question["options"].toArray();
+    QJsonArray answer = question["answer"].toArray();
 
     int correctAnswerIndex = -1;
     if (!answer.isEmpty()) {
@@ -212,6 +225,14 @@ QJsonObject MCQSingleEditor::getJson()
 {
     m_currentQuestion["question"] = questionPromptEdit->toPlainText();
     m_currentQuestion["type"] = "mcq_single";
+
+        // ✨ Save the hint text! ✨
+    QString hintText = m_hintTextEdit->toPlainText().trimmed();
+    if (!hintText.isEmpty()) {
+        m_currentQuestion["hint"] = hintText;
+    } else {
+        m_currentQuestion.remove("hint");
+    }
 
     // Handle media
     QString mediaType = mediaTypeCombo->currentText();

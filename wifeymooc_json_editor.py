@@ -602,31 +602,50 @@ class WifeyMOOCEditor:
         tk.Button(media_frame, text="💾 Save Media Files", command=save_media,
                  bg=self.colors['accent'], fg=self.colors['button_text'], font=('Arial', 10, 'bold')).pack(pady=8)
 
-    def create_question_text_section(self, question, index, label_text="📝 Question Text 📝"):
-            """Create the question text editing section - now with multi-line magic! 💖"""
-            text_frame = tk.LabelFrame(self.editor_frame, text=label_text,
-                                    font=('Arial', 12, 'bold'), bg=self.colors['white'],
-                                    fg=self.colors['text'])
-            text_frame.pack(fill=tk.X, padx=10, pady=10)
+    def create_question_text_section(self, question, index, label_text="📝 Question Text & Hint 📝"):
+        """Create the question text and hint editing section! 💖"""
+        text_frame = tk.LabelFrame(self.editor_frame, text=label_text,
+                                font=('Arial', 12, 'bold'), bg=self.colors['white'],
+                                fg=self.colors['text'])
+        text_frame.pack(fill=tk.X, padx=10, pady=10)
 
-            tk.Label(text_frame, text="💡 Write your question here, sweetie! You can use Enter for newlines! ✨",
-                    bg=self.colors['white'], fg=self.colors['text'],
-                    font=('Arial', 9, 'italic')).pack(pady=5)
+        # --- Question Text ---
+        tk.Label(text_frame, text="💡 Write your question here, sweetie! You can use Enter for newlines! ✨",
+                bg=self.colors['white'], fg=self.colors['text'],
+                font=('Arial', 9, 'italic')).pack(pady=5)
+        
+        question_text_widget = tk.Text(text_frame, height=4, font=('Arial', 11),
+                            bg=self.colors['entry'], width=80, wrap=tk.WORD)
+        question_text_widget.pack(padx=10, pady=(0, 10), fill=tk.X)
+        question_text_widget.insert('1.0', question.get('question', ''))
+
+        # --- ✨ Our new Hint Text Box! ✨ ---
+        tk.Label(text_frame, text="💡 Add a cute little hint for Sierra here (optional)! ✨",
+                bg=self.colors['white'], fg=self.colors['text'],
+                font=('Arial', 9, 'italic')).pack(pady=5)
+
+        hint_text_widget = tk.Text(text_frame, height=3, font=('Arial', 11),
+                                 bg=self.colors['entry'], width=80, wrap=tk.WORD)
+        hint_text_widget.pack(padx=10, pady=(0, 10), fill=tk.X)
+        hint_text_widget.insert('1.0', question.get('hint', '')) # Load the hint!
+
+        def save_question_and_hint():
+            # Save the question text
+            question['question'] = question_text_widget.get('1.0', tk.END).strip()
             
-            # 🪄 Swapped tk.Entry for tk.Text to allow multiple lines! Poof!
-            text_widget = tk.Text(text_frame, height=4, font=('Arial', 11),
-                                bg=self.colors['entry'], width=80, wrap=tk.WORD)
-            text_widget.pack(padx=10, pady=10, fill=tk.X)
-            text_widget.insert('1.0', question.get('question', '')) # How we add text now!
+            # ✨ Save the hint text! ✨
+            hint_text = hint_text_widget.get('1.0', tk.END).strip()
+            if hint_text:
+                question['hint'] = hint_text
+            else:
+                # If the hint is empty, we remove it so the JSON is clean!
+                question.pop('hint', None)
 
-            def save_question_text():
-                # How we get text from the new widget!
-                question['question'] = text_widget.get('1.0', tk.END).strip()
-                self.refresh_questions_list()
-                messagebox.showinfo("Success! 💖", "Question text updated beautifully!")
+            self.refresh_questions_list()
+            messagebox.showinfo("Success! 💖", "Question and hint updated beautifully!")
 
-            tk.Button(text_frame, text="💾 Save Question Text", command=save_question_text,
-                    bg=self.colors['accent'], fg=self.colors['button_text'], font=('Arial', 10, 'bold')).pack(pady=5)
+        tk.Button(text_frame, text="💾 Save Text & Hint", command=save_question_and_hint,
+                bg=self.colors['accent'], fg=self.colors['button_text'], font=('Arial', 10, 'bold')).pack(pady=5)
 
     def edit_question(self, index):
         """Edit question at specified index - the main magic! ✨"""
