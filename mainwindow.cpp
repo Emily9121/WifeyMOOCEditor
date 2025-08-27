@@ -8,6 +8,8 @@
  */
 
 #include "mainwindow.h"
+#include "./ui_mainwindow.h"
+
 #include "editors/mcqsingleeditor.h"
 #include "editors/mcqmultipleeditor.h"
 #include "editors/wordfilleditor.h"
@@ -27,9 +29,10 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include "helpers.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), currentEditor(nullptr), currentQuestionIndex(-1)
+    : QMainWindow(parent), currentQuestionIndex(-1)
 {
     setWindowTitle("💖 Wifey MOOC Editor C++ Edition 💖");
     setMinimumSize(1200, 800);
@@ -99,11 +102,12 @@ void MainWindow::setupMainLayout()
 void MainWindow::showWelcomeMessage()
 {
     clearEditorPanel();
+    // 💖 We now create the QLabel directly on the heap and use the smart pointer to manage it. 💖
     QLabel *welcomeLabel = new QLabel("💖 Welcome to the Wifey MOOC Editor! 💖\n\nLoad a JSON file to start editing,\n or create a new file and add questions!");
     welcomeLabel->setAlignment(Qt::AlignCenter);
     welcomeLabel->setStyleSheet("font-size: 18pt; color: #8B008B;");
-    rightPanelLayout->addWidget(welcomeLabel, 1);
-    currentEditor = welcomeLabel;
+    currentEditor.reset(welcomeLabel);
+    rightPanelLayout->addWidget(currentEditor.get(), 1);
 }
 
 void MainWindow::openFile()
@@ -188,13 +192,18 @@ void MainWindow::saveCurrentQuestion()
     if (currentQuestionIndex < 0 || currentQuestionIndex >= allQuestions.size() || !currentEditor)
         return;
 
-    BaseQuestionEditor *editor = qobject_cast<BaseQuestionEditor *>(currentEditor);
+    BaseQuestionEditor *editor = qobject_cast<BaseQuestionEditor *>(currentEditor.get());
     if (!editor)
         return;
 
     allQuestions[currentQuestionIndex] = editor->getJson();
-    refreshQuestionList();
-    questionListWidget->setCurrentRow(currentQuestionIndex);
+
+    QString type = allQuestions[currentQuestionIndex]["type"].toString("unknown");
+    QString text = allQuestions[currentQuestionIndex]["question"].toString("No question text.");
+    if (text.length() > 30)
+        text = text.left(30) + "...";
+    
+    questionListWidget->item(currentQuestionIndex)->setText(QString("%1. [%2] %3").arg(currentQuestionIndex + 1).arg(type).arg(text));
 }
 
 void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
@@ -215,39 +224,40 @@ void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
 
     clearEditorPanel();
 
+    // 💖 Now we're creating a new object on the heap and using reset() to assign it to the unique_ptr! 💖
     if (type == "mcq_single")
-        currentEditor = new MCQSingleEditor(this);
+        currentEditor.reset(new MCQSingleEditor(this));
     else if (type == "mcq_multiple")
-        currentEditor = new McqMultipleEditor(this);
+        currentEditor.reset(new McqMultipleEditor(this));
     else if (type == "word_fill")
-        currentEditor = new WordFillEditor(this);
+        currentEditor.reset(new WordFillEditor(this));
     else if (type == "order_phrase")
-        currentEditor = new OrderPhraseEditor(this);
+        currentEditor.reset(new OrderPhraseEditor(this));
     else if (type == "match_phrases")
-        currentEditor = new MatchPhrasesEditor(this);
+        currentEditor.reset(new MatchPhrasesEditor(this));
     else if (type == "categorization_multiple")
-        currentEditor = new CategorizationEditor(this);
+        currentEditor.reset(new CategorizationEditor(this));
     else if (type == "list_pick")
-        currentEditor = new ListPickEditor(this);
+        currentEditor.reset(new ListPickEditor(this));
     else if (type == "image_tagging")
-        currentEditor = new ImageTaggingEditor(this);
+        currentEditor.reset(new ImageTaggingEditor(this));
     else if (type == "match_sentence")
-        currentEditor = new MatchSentenceEditor(this);
+        currentEditor.reset(new MatchSentenceEditor(this));
     else if (type == "sequence_audio")
-        currentEditor = new SequenceAudioEditor(this);
+        currentEditor.reset(new SequenceAudioEditor(this));
     else if (type == "fill_blanks_dropdown")
-        currentEditor = new FillBlanksDropdownEditor(this);
+        currentEditor.reset(new FillBlanksDropdownEditor(this));
     else if (type == "multi_questions")
-        currentEditor = new MultiQuestionsEditor(this);
+        currentEditor.reset(new MultiQuestionsEditor(this));
     else {
         QLabel *placeholder = new QLabel(QString("Editor for '%1' coming soon! ✨").arg(type), this);
         placeholder->setAlignment(Qt::AlignCenter);
-        currentEditor = placeholder;
+        currentEditor.reset(placeholder);
     }
 
-    rightPanelLayout->addWidget(currentEditor, 1);
+    rightPanelLayout->addWidget(currentEditor.get(), 1);
 
-    if (auto editor = qobject_cast<BaseQuestionEditor *>(currentEditor)) {
+    if (auto editor = dynamic_cast<BaseQuestionEditor *>(currentEditor.get())) {
         editor->loadJson(questionJson);
     } else {
         showWelcomeMessage();
@@ -256,11 +266,9 @@ void MainWindow::loadEditorForQuestion(const QJsonObject &questionJson)
 
 void MainWindow::clearEditorPanel()
 {
-    if (currentEditor) {
-        rightPanelLayout->removeWidget(currentEditor);
-        currentEditor->deleteLater();
-        currentEditor = nullptr;
-    }
+    // The smart pointer manages memory, we just need to remove the widget from the layout.
+    rightPanelLayout->removeWidget(currentEditor.get());
+    currentEditor.reset();
 }
 
 void MainWindow::onQuestionTypeChanged(int index)
@@ -269,37 +277,38 @@ void MainWindow::onQuestionTypeChanged(int index)
 
     QString type = questionTypeSelector->itemData(index).toString();
 
+    // 💖 Now we're creating a new object on the heap and using reset() to assign it to the unique_ptr! 💖
     if (type == "mcq_single")
-        currentEditor = new MCQSingleEditor(this);
+        currentEditor.reset(new MCQSingleEditor(this));
     else if (type == "mcq_multiple")
-        currentEditor = new McqMultipleEditor(this);
+        currentEditor.reset(new McqMultipleEditor(this));
     else if (type == "word_fill")
-        currentEditor = new WordFillEditor(this);
+        currentEditor.reset(new WordFillEditor(this));
     else if (type == "order_phrase")
-        currentEditor = new OrderPhraseEditor(this);
+        currentEditor.reset(new OrderPhraseEditor(this));
     else if (type == "match_phrases")
-        currentEditor = new MatchPhrasesEditor(this);
+        currentEditor.reset(new MatchPhrasesEditor(this));
     else if (type == "categorization_multiple")
-        currentEditor = new CategorizationEditor(this);
+        currentEditor.reset(new CategorizationEditor(this));
     else if (type == "list_pick")
-        currentEditor = new ListPickEditor(this);
+        currentEditor.reset(new ListPickEditor(this));
     else if (type == "image_tagging")
-        currentEditor = new ImageTaggingEditor(this);
+        currentEditor.reset(new ImageTaggingEditor(this));
     else if (type == "match_sentence")
-        currentEditor = new MatchSentenceEditor(this);
+        currentEditor.reset(new MatchSentenceEditor(this));
     else if (type == "sequence_audio")
-        currentEditor = new SequenceAudioEditor(this);
+        currentEditor.reset(new SequenceAudioEditor(this));
     else if (type == "fill_blanks_dropdown")
-        currentEditor = new FillBlanksDropdownEditor(this);
+        currentEditor.reset(new FillBlanksDropdownEditor(this));
     else if (type == "multi_questions")
-        currentEditor = new MultiQuestionsEditor(this);
+        currentEditor.reset(new MultiQuestionsEditor(this));
     else {
         QLabel *placeholder = new QLabel(QString("Editor for '%1' coming soon! ✨").arg(type), this);
         placeholder->setAlignment(Qt::AlignCenter);
-        currentEditor = placeholder;
+        currentEditor.reset(placeholder);
     }
 
-    rightPanelLayout->addWidget(currentEditor, 1);
+    rightPanelLayout->addWidget(currentEditor.get(), 1);
 }
 
 bool MainWindow::saveFile()

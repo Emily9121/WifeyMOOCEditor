@@ -12,6 +12,7 @@
         "any": "cpp",
         "compare": "cpp",
         "format": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "random": "cpp"
     }
 }

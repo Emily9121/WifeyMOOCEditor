@@ -42,6 +42,7 @@ set(SOURCES
 set(HEADERS
     mainwindow.h
     helpers.h
+    # 💖 The problem was here! We don't need to list basequestioneditor.h anymore. 💖
     editors/basequestioneditor.h
     editors/mcqsingleeditor.h
     editors/mcqmultipleeditor.h

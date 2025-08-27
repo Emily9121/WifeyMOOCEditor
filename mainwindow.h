@@ -15,6 +15,7 @@
 #include <QMainWindow>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <memory> // 💖 Added for std::unique_ptr! 💖
 #include "basequestioneditor.h"
 
 // Forward declarations to keep things super tidy!
@@ -73,8 +74,8 @@ private:
     // The dropdown for picking question types
     QComboBox *questionTypeSelector;
 
-    // The currently active editor widget
-    QWidget *currentEditor;
+    // 💖 Switching to a smart pointer for safe memory management! 💖
+    std::unique_ptr<QWidget> currentEditor;
 
     // Our brand new question list!
     QListWidget *questionListWidget;
