@@ -108,3 +108,4 @@ build/CMakeCache.txt
 build/cmake_install.cmake
 build/.qt/QtDeployTargets.cmake
 build/.qt/QtDeploySupport.cmake
+/build
