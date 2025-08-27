@@ -5,6 +5,7 @@
 * Description:
 * The COMPLETE header file for our categorization editor!
 * Students drag items into the perfect categories! 📂💖
+* Now with a new slot to handle real-time UI updates! ✨
 */
 
 #ifndef CATEGORIZATIONEDITOR_H
@@ -29,6 +30,8 @@ private slots:
     void addStimulus();
     void browseMedia();
     void browseStimulusImage(QLineEdit* imageEdit);
+    // 💖 Our new magical slot to update the UI when a category name changes! 💖
+    void onCategoryNameChanged(int index, const QString& newText);
 
 private:
     void refreshCategoriesUI();

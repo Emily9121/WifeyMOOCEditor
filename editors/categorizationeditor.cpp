@@ -1,8 +1,3 @@
-// =============================================================================================
-// FILE: editors/categorizationeditor.cpp
-//
-// Description: The corrected implementation for our categorization editor!
-// =============================================================================================
 /*
 * File: categorizationeditor.cpp
 * Author: Emily
@@ -10,6 +5,7 @@
 * Description:
 * The COMPLETE implementation for our categorization editor!
 * Perfect for sorting cute items into adorable categories! 📂💖
+* Now with a fix to update the UI in real-time! ✨
 */
 
 #include "categorizationeditor.h"
@@ -38,7 +34,6 @@ CategorizationEditor::CategorizationEditor(QWidget *parent) : BaseQuestionEditor
 
     auto mediaRowLayout = new QHBoxLayout();
     m_mediaTypeCombo = new QComboBox();
-    // 💖 I've added 'Image' here so you can select it from the dropdown! 💖
     m_mediaTypeCombo->addItems({"None", "Video", "Audio", "Image"});
 
     m_mediaEdit = new QLineEdit();
@@ -100,7 +95,6 @@ CategorizationEditor::CategorizationEditor(QWidget *parent) : BaseQuestionEditor
     connect(addStimulusButton, &QPushButton::clicked, this, &CategorizationEditor::addStimulus);
     stimuliGroupLayout->addWidget(addStimulusButton);
 
-    // 💖 We're giving this section a stretch factor of 1 so it takes up all the space! 💖
     mainLayout->addWidget(stimuliGroup, 1);
 
     // Initialize with defaults
@@ -140,7 +134,6 @@ void CategorizationEditor::loadJson(const QJsonObject& question)
         } else if (media.contains("audio")) {
             m_mediaTypeCombo->setCurrentText("Audio");  
             m_mediaEdit->setText(media["audio"].toString());
-        // 💖 And our new 'image' type! So cute! 💖
         } else if (media.contains("image")) {
             m_mediaTypeCombo->setCurrentText("Image");
             m_mediaEdit->setText(media["image"].toString());
@@ -234,6 +227,11 @@ void CategorizationEditor::refreshCategoriesUI()
 
         QLineEdit* lineEdit = new QLineEdit(categoryText);
         lineEdit->setPlaceholderText("Category name...");
+        
+        // 💖 Here's our magical connection! 💖
+        connect(lineEdit, &QLineEdit::textChanged, [this, i](const QString& newText){
+            onCategoryNameChanged(i, newText);
+        });
 
         QPushButton* deleteButton = new QPushButton("Delete 🗑️");
         connect(deleteButton, &QPushButton::clicked, [this, i](){
@@ -252,6 +250,28 @@ void CategorizationEditor::refreshCategoriesUI()
 
         m_categoriesLayout->addWidget(row);
         m_categoryWidgets.append(row);
+    }
+}
+
+// 💖 Our new function to handle the name change! So cute! 💖
+void CategorizationEditor::onCategoryNameChanged(int index, const QString& newText)
+{
+    QJsonArray categories = m_currentQuestion["categories"].toArray();
+    if (index >= 0 && index < categories.size()) {
+        categories.replace(index, newText);
+        m_currentQuestion["categories"] = categories;
+        
+        // Update the answer object keys if the old name was used
+        QJsonObject answer = m_currentQuestion["answer"].toObject();
+        QString oldText = categories[index].toString(); // The old text is now at a different index
+        if (answer.contains(oldText)) {
+            QJsonValue val = answer[oldText];
+            answer.remove(oldText);
+            answer[newText] = val;
+            m_currentQuestion["answer"] = answer;
+        }
+
+        refreshStimuliUI(); // Update the dropdowns in the stimulus section
     }
 }
 
@@ -303,9 +323,9 @@ void CategorizationEditor::refreshStimuliUI()
         textLayout->addWidget(new QLabel("📝 Text:"));
         QLineEdit* textEdit = new QLineEdit(text);
         textEdit->setPlaceholderText("Item text or description...");
-        textLayout->addWidget(textEdit, 1);
         layout->addLayout(textLayout);
-
+        textLayout->addWidget(textEdit, 1);
+        
         // Image input
         auto imageLayout = new QHBoxLayout();
         imageLayout->addWidget(new QLabel("🖼️ Image:"));
@@ -402,7 +422,6 @@ void CategorizationEditor::browseMedia()
         filter = "Video Files (*.mp4 *.avi *.mov *.mkv);;All Files (*)";
     } else if (mediaType == "audio") {
         filter = "Audio Files (*.mp3 *.wav *.ogg *.m4a);;All Files (*)";
-    // 💖 I've added our new image filter! 💖
     } else if (mediaType == "image") {
         filter = "Image Files (*.png *.jpg *.jpeg *.gif *.bmp);;All Files (*)";
     } else {
