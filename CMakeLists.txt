@@ -1,87 +1,81 @@
-#
-# 💖 WifeyMOOC Editor CMake Configuration 💖
-# For developers who prefer CMake over qmake! ✨
-#
-
+# CMakeLists.txt for WifeyMOOCEditor - AI Edition! 💖
 cmake_minimum_required(VERSION 3.16)
-project(WifeyMOOCEditor VERSION 2.1.0 LANGUAGES CXX)
+project(WifeyMOOCEditor VERSION 1.2 LANGUAGES CXX)
 
-# Set C++ standard
+# Let's find our Qt libraries, we need them to be fabulous!
+# Added Network for our magical new AI assistant! ✨
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network)
+
+# These magical lines handle all the Qt boilerplate for us! So easy!
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+# Tell CMake we're using C++17, because we're modern and chic!
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find Qt
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
-
-# Enable automatic MOC, UIC and RCC
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON) 
-set(CMAKE_AUTOUIC ON)
-
-set(CMAKE_BUILD_TYPE Debug)
-
-# Source files - all our perfectly fixed editors! ✨
-set(SOURCES
+# Here are all our pretty source files!
+set(PROJECT_SOURCES
     main.cpp
     mainwindow.cpp
     editors/mcqsingleeditor.cpp
     editors/mcqmultipleeditor.cpp
     editors/wordfilleditor.cpp
+    editors/orderphraseeditor.cpp
+    editors/matchphraseseditor.cpp
+    editors/categorizationeditor.cpp
+    editors/listpickeditor.cpp
     editors/imagetaggingeditor.cpp
     editors/matchsentenceeditor.cpp
-    editors/multiquestionseditor.cpp
-    editors/categorizationeditor.cpp
-    editors/fillblanksdropdowneditor.cpp
-    editors/listpickeditor.cpp
-    editors/matchphraseseditor.cpp
-    editors/orderphraseeditor.cpp
     editors/sequenceaudioeditor.cpp
+    editors/fillblanksdropdowneditor.cpp
+    editors/multiquestionseditor.cpp
 )
 
-# Header files - all the adorable declarations! 💕
-set(HEADERS
+# And our lovely header files!
+set(PROJECT_HEADERS
     mainwindow.h
     helpers.h
-    # 💖 The problem was here! We don't need to list basequestioneditor.h anymore. 💖
-    editors/basequestioneditor.h
+    basequestioneditor.h
     editors/mcqsingleeditor.h
     editors/mcqmultipleeditor.h
     editors/wordfilleditor.h
+    editors/orderphraseeditor.h
+    editors/matchphraseseditor.h
+    editors/categorizationeditor.h
+    editors/listpickeditor.h
     editors/imagetaggingeditor.h
     editors/matchsentenceeditor.h
-    editors/multiquestionseditor.h
-    editors/categorizationeditor.h
-    editors/fillblanksdropdowneditor.h
-    editors/listpickeditor.h
-    editors/matchphraseseditor.h
-    editors/orderphraseeditor.h
     editors/sequenceaudioeditor.h
+    editors/fillblanksdropdowneditor.h
+    editors/multiquestionseditor.h
 )
 
-# Create the executable
-add_executable(WifeyMOOCEditor ${SOURCES} ${HEADERS})
-
-# Link Qt libraries
-target_link_libraries(WifeyMOOCEditor Qt6::Core Qt6::Widgets)
-
-# Include directories
-target_include_directories(WifeyMOOCEditor PRIVATE . editors)
-
-# Compiler flags for extra safety and cuteness! 🛡️
-target_compile_options(WifeyMOOCEditor PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra>
-    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+# And of course, our UI file that makes everything look so cute!
+set(PROJECT_FORMS
+    mainwindow.ui
 )
 
-# Set application properties
-set_target_properties(WifeyMOOCEditor PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
-    MACOSX_BUNDLE_INFO_STRING "The cutest quiz editor ever! 💖"
-    MACOSX_BUNDLE_BUNDLE_NAME "WifeyMOOC Editor"
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+# Now, let's put it all together and create our executable!
+qt_add_executable(WifeyMOOCEditor
+    ${PROJECT_SOURCES}
+    ${PROJECT_HEADERS}
+    ${PROJECT_FORMS}
 )
 
-# Print cute build message! 💖
-message(STATUS "Building the most adorable quiz editor with CMake! 💖✨")
+# Finally, link all the Qt libraries we need to make the magic happen!
+# This is the line that fixes the linker error, babe! 💖
+target_link_libraries(WifeyMOOCEditor PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Network
+)
+
+# Optional but super helpful: Install rules for when you want to deploy!
+install(TARGETS WifeyMOOCEditor
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
