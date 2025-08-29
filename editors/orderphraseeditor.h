@@ -40,6 +40,10 @@ private:
     QLineEdit* m_mediaEdit;
     QComboBox* m_mediaTypeCombo;
 
+    // 💖 ADDED: UI elements for our lesson PDF! So cute! 💖
+    QLineEdit* m_lessonPdfEdit;
+    QPushButton* m_lessonPdfButton;
+
     // Data storage
     QJsonObject m_currentQuestion;
     QList<QWidget*> m_phraseWidgets;

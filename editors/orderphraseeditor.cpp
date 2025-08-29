@@ -22,6 +22,32 @@ OrderPhraseEditor::OrderPhraseEditor(QWidget *parent) : BaseQuestionEditor(paren
     auto mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(15);
 
+        // ... (rest of the constructor UI setup is the same) ...
+    
+    // 💖 ADD THIS SNIPPET FOR THE LESSON PDF SECTION 💖
+    auto lessonGroup = new QGroupBox("📚 Lesson PDF (Optional) 📚");
+    auto lessonLayout = new QVBoxLayout(lessonGroup);
+    auto lessonRowLayout = new QHBoxLayout();
+    
+    m_lessonPdfEdit = new QLineEdit();
+    m_lessonPdfEdit->setPlaceholderText("Select the PDF file for this lesson...");
+    
+    m_lessonPdfButton = new QPushButton("Browse 📁");
+    connect(m_lessonPdfButton, &QPushButton::clicked, this, [this]() {
+        QString filePath = QFileDialog::getOpenFileName(this, "💖 Select Lesson PDF File 💖", "", "PDF Files (*.pdf);;All Files (*)");
+        if (!filePath.isEmpty()) {
+            m_lessonPdfEdit->setText(filePath);
+        }
+    });
+
+    lessonRowLayout->addWidget(new QLabel("File:"));
+    lessonRowLayout->addWidget(m_lessonPdfEdit, 1);
+    lessonRowLayout->addWidget(m_lessonPdfButton);
+
+    lessonLayout->addLayout(lessonRowLayout);
+    mainLayout->addWidget(lessonGroup);
+    // 💖 END SNIPPET 💖
+
     // Question text section
     auto questionGroup = new QGroupBox("❓ Question Prompt ❓");
     auto questionLayout = new QVBoxLayout(questionGroup);
@@ -133,6 +159,13 @@ void OrderPhraseEditor::loadJson(const QJsonObject& question)
         }
     }
 
+        // 💖 ADDED: Load the PDF path! 💖
+    QJsonObject lessonObj = question["lesson"].toObject();
+    if (m_lessonPdfEdit) {
+        m_lessonPdfEdit->setText(lessonObj["pdf"].toString());
+    }
+
+
     refreshPhrasesUI();
 }
 
@@ -185,6 +218,21 @@ QJsonObject OrderPhraseEditor::getJson()
 
     m_currentQuestion["answer"] = answerArray;
     m_currentQuestion["phrase_shuffled"] = tempShuffle;
+
+        // 💖 ADD THIS SNIPPET TO SAVE THE LESSON PDF 💖
+    // Handle lesson PDF
+    if (m_lessonPdfEdit) {
+        QString pdfPath = m_lessonPdfEdit->text().trimmed();
+        if (!pdfPath.isEmpty()) {
+            QJsonObject lessonObj;
+            lessonObj["pdf"] = pdfPath;
+            m_currentQuestion["lesson"] = lessonObj;
+        } else {
+            m_currentQuestion.remove("lesson");
+        }
+    }
+    // 💖 END SNIPPET 💖
+
 
     return m_currentQuestion;
 }

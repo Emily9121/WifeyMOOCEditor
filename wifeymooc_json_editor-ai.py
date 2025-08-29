@@ -1190,12 +1190,40 @@ Text for inspiration:
         title_text = f"💖 Editing Question {index + 1}: {qtype.replace('_', ' ').title()} 💖"
         tk.Label(self.editor_frame, text=title_text, font=('Comic Sans MS', 18, 'bold'),
                 bg=self.colors['white'], fg=self.colors['text']).pack(pady=10)
+        self.create_lesson_section(question) # ✨ ADDED: Call our new lesson PDF editor! ✨
         editor_method = getattr(self, f'edit_{qtype}', None)
         if editor_method:
             editor_method(question, index)
         else:
             tk.Label(self.editor_frame, text=f"❌ Oopsie! Unsupported question type: {qtype}",
                     font=('Arial', 12), bg=self.colors['white'], fg='red').pack(pady=20)
+            
+    def create_lesson_section(self, question):
+        """✨ ADDED: A new function to create the adorable lesson PDF editor section! ✨"""
+        lesson_frame = tk.LabelFrame(self.editor_frame, text="📚 Lesson PDF (Optional) 📚",
+                                     font=('Arial', 12, 'bold'), bg=self.colors['white'], fg=self.colors['text'])
+        lesson_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        lesson_obj = question.get('lesson', {}) or {}
+        lesson_pdf_var = tk.StringVar(value=lesson_obj.get('pdf', ''))
+
+        lesson_row = tk.Frame(lesson_frame, bg=self.colors['white'])
+        lesson_row.pack(fill=tk.X, padx=5, pady=5)
+        tk.Label(lesson_row, text="PDF File:", bg=self.colors['white'], font=('Arial', 10, 'bold')).pack(side=tk.LEFT)
+        tk.Entry(lesson_row, textvariable=lesson_pdf_var, width=50, bg=self.colors['entry']).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        tk.Button(lesson_row, text="Browse 📁", bg=self.colors['button'], fg=self.colors['button_text'],
+                  command=lambda: self.browse_media_file(lesson_pdf_var, 'pdf')).pack(side=tk.RIGHT, padx=5)
+
+        def save_lesson():
+            pdf_path = lesson_pdf_var.get().strip()
+            if pdf_path:
+                question['lesson'] = {'pdf': pdf_path}
+            else:
+                question.pop('lesson', None) # Remove the key if the path is empty
+            messagebox.showinfo("Success! 💖", "Lesson PDF path updated successfully, darling!")
+
+        tk.Button(lesson_frame, text="💾 Save Lesson PDF", command=save_lesson,
+                  bg=self.colors['accent'], fg=self.colors['button_text'], font=('Arial', 10, 'bold')).pack(pady=8)
 
     def edit_image_tagging(self, question, index):
         """Enhanced editor for image_tagging questions - now with proper alternative support! 🏷️"""

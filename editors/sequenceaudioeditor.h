@@ -46,6 +46,10 @@ private:
     // Data storage
     QJsonObject m_currentQuestion;
     QList<QWidget*> m_optionWidgets;
+
+    // 💖 ADDED: UI elements for our lesson PDF! So cute! 💖
+    QLineEdit* m_lessonPdfEdit;
+    QPushButton* m_lessonPdfButton;
 };
 
 #endif // SEQUENCEAUDIOEDITOR_H

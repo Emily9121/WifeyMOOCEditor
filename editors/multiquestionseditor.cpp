@@ -31,6 +31,8 @@ MultiQuestionsEditor::MultiQuestionsEditor(QWidget *parent) : BaseQuestionEditor
     auto mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(15);
 
+    
+
     // Question text section
     auto questionGroup = new QGroupBox("❓ Multi-Questions Container Prompt ❓");
     auto questionLayout = new QVBoxLayout(questionGroup);

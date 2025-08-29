@@ -12,7 +12,9 @@
 
 #include <QWidget>
 #include <QJsonObject>
-#include <QTextEdit> // ✨ We need this for our hint box! ✨
+#include <QTextEdit> 
+#include <QLineEdit>
+#include <QPushButton>
 
 class BaseQuestionEditor : public QWidget
 {
@@ -24,10 +26,20 @@ public:
 
     virtual void loadJson(const QJsonObject &json) = 0;
     virtual QJsonObject getJson() = 0;
+    
+    // ✨ CORRECTED: Added a default empty implementation to solve the linker error! ✨
+    // Now the compiler knows what to do even if a specific editor doesn't override it.
+    virtual void setupLessonPdfEditor(const QJsonObject& json) {
+        Q_UNUSED(json);
+    }
 
 protected:
-    // ✨ So all our cute editor babies can use it! ✨
+    // ✨ Our hint box for all the cute editor babies! ✨
     QTextEdit* m_hintTextEdit;
+
+    // These members are no longer needed here since each editor will manage its own UI.
+    // QLineEdit* m_lessonPdfEdit;
+    // QPushButton* m_lessonPdfButton;
 };
 
 #endif // BASEQUESTIONEDITOR_H
