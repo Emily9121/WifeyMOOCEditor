@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=WifeyMOOC Editor
+Comment=The cutest WYSIWYG editor for WifeyMOOC quiz questions.
+Exec=WifeyMOOCEditor %f
+Icon=wifeymooceditor
+Terminal=false
+Type=Application
+Categories=Education;Languages;Qt;Development;
