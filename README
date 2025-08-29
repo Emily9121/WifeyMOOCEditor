@@ -1,4 +1,4 @@
-# WifeyMOOC Editor 1.3.0
+# WifeyMOOC Editor 2.0.0
 
 This is an editor for question files used by Wifeymooc, an App used for language learning, due to how it came to exist, no maintenance is promised even for massive bugs, don't complain to me if it kill your guinea pig or something.
 
@@ -15,3 +15,5 @@ Changelog:
 1.2.0 - Added the python version to the public repository - Added support for hint in the json file!
 
 1.3.0 - Added question auto-generation via AI, Either built-in via Gemini API (Key not provided), or "Offline" with any local or online providers.
+
+2.0.0 - Added lesson field - Probably last big feature release.

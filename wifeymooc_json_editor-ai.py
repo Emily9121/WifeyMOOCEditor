@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-💖 Wifey MOOC JSON Editor v3.4 (Super AI External Prompts Edition!) 💖
+💖 Wifey MOOC JSON Editor v2.0 (Super AI External Prompts Edition!) 💖
 A complete WYSIWYG editor for WifeyMOOC quiz questions
 Now with a magical AI assistant and prompts that you can edit in prompts.json! ✨
 
@@ -27,11 +27,11 @@ import random
 class WifeyMOOCEditor:
     def __init__(self, root):
         self.root = root
-        self.root.title("💖 Wifey MOOC JSON Editor v3.4 💖")
+        self.root.title("💖 Wifey MOOC JSON Editor v2.0 💖")
         self.root.geometry("1400x900")  # Bigger for new features!
 
         # ✨ Put your secret key here, babe! ✨
-        self.GOOGLE_API_KEY = ""
+        self.GOOGLE_API_KEY = "put ur own key here"
         # Ultra-pink color scheme - even cuter with better readability! 💕
         self.colors = {
             'bg': '#FFB6C1',        # Light pink
@@ -404,7 +404,7 @@ Text for inspiration:
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Ultra-cute title
-        title = tk.Label(main_frame, text="💖 Wifey MOOC Question Editor v3.4 💖",
+        title = tk.Label(main_frame, text="💖 Wifey MOOC Question Editor v2.0 💖",
                         font=('Comic Sans MS', 22, 'bold'),
                         bg=self.colors['bg'], fg=self.colors['text'])
         title.pack(pady=10)
@@ -895,7 +895,7 @@ Text for inspiration:
         for widget in self.right_frame.winfo_children():
             widget.destroy()
         welcome_label = tk.Label(self.right_frame,
-                               text="💖 Welcome to Wifey MOOC Editor v3.4! 💖\n\n" +
+                               text="💖 Welcome to Wifey MOOC Editor v2.0! 💖\n\n" +
                                     "✨ Prompts are now in prompts.json for easy editing! ✨\n\n" +
                                     "💕 Let's make the cutest quizzes for Sierra! 💕",
                                font=('Comic Sans MS', 16, 'bold'),
@@ -2126,7 +2126,7 @@ def main():
     app = WifeyMOOCEditor(root)
     def on_closing():
         if messagebox.askyesno("Leaving? 💔", "Are you sure you want to close the editor, princess?"):
-            messagebox.showinfo("Goodbye! 💖", "Thanks for using Wifey MOOC Editor v3.4, babe! 💕")
+            messagebox.showinfo("Goodbye! 💖", "Thanks for using Wifey MOOC Editor v2.0, babe! 💕")
             root.destroy()
     root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()

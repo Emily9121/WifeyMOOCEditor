@@ -27,7 +27,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), currentQuestionIndex(-1)
 {
-    setWindowTitle("💖 Wifey MOOC Editor C++ Edition 💖");
+    setWindowTitle("💖 Wifey MOOC 2.0 Editor C++ Edition 💖");
     setMinimumSize(1200, 800);
     setupMainLayout();
     createActions();
