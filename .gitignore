@@ -110,5 +110,5 @@ build/.qt/QtDeployTargets.cmake
 build/.qt/QtDeploySupport.cmake
 /build
 prompts.json
-wifeymooc_json_editor-ai.
+wifeymooc_json_editor-ai.py
 .DS_Store
