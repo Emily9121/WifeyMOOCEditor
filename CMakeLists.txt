@@ -4,7 +4,7 @@ project(WifeyMOOCEditor VERSION 1.2 LANGUAGES CXX)
 
 # Let's find our Qt libraries, we need them to be fabulous!
 # Added Network for our magical new AI assistant! ✨
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets)
 
 # These magical lines handle all the Qt boilerplate for us! So easy!
 set(CMAKE_AUTOMOC ON)
@@ -19,6 +19,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(PROJECT_SOURCES
     main.cpp
     mainwindow.cpp
+    mediahandler.cpp
+    questionhandlers.cpp # 💖 Add me!
+    droptag.cpp          # 💖 And me too!
     editors/mcqsingleeditor.cpp
     editors/mcqmultipleeditor.cpp
     editors/wordfilleditor.cpp
@@ -38,6 +41,9 @@ set(PROJECT_HEADERS
     mainwindow.h
     helpers.h
     basequestioneditor.h
+    mediahandler.h
+    questionhandlers.h # 💖 Add me!
+    droptag.h          # 💖 And me too!
     editors/mcqsingleeditor.h
     editors/mcqmultipleeditor.h
     editors/wordfilleditor.h
@@ -71,6 +77,8 @@ target_link_libraries(WifeyMOOCEditor PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Network
+    Qt6::Multimedia
+    Qt6::MultimediaWidgets
 )
 
 # Optional but super helpful: Install rules for when you want to deploy!

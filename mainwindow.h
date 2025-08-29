@@ -9,6 +9,8 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include "basequestioneditor.h"
+#include "mediahandler.h"
+#include "questionhandlers.h" // 💖 ADD THIS LINE 💖
 
 // Forward declarations to keep things super tidy!
 class QAction;
@@ -23,6 +25,7 @@ class QTextEdit;
 class QLabel;
 class QCheckBox; // For our new offline mode toggle! ✨
 class QFrame;    // For showing/hiding UI sections!
+
 
 class MainWindow : public QMainWindow
 {
@@ -49,6 +52,7 @@ private slots:
     void onAIRequestFinished(QNetworkReply *reply);
     void onOfflineModeToggled(bool checked); // For our new offline mode!
     void onProcessPastedJson();            // For processing the pasted text!
+    void onLivePreview(); // 💖 ADD THIS LINE 💖
 
 private:
     // Original functions - untouched and perfect!
@@ -102,6 +106,7 @@ private:
     QFrame *aiOfflineFrame;
     QTextEdit *aiPromptOutputText;
     QTextEdit *aiResponseInputText;
+    MediaHandler *m_mediaHandler;
 };
 
 #endif // MAINWINDOW_H

@@ -100,7 +100,9 @@ The AI assistant can create an entire quiz for you from a sample text\!
 * **1.1.0** \- Major rewrite and bug fix release.  
 * **1.2.0** \- Added support for an optional hint field in questions.  
 * **1.3.0** \- Introduced magical AI-powered question generation (Online & Offline modes).  
-* **2.0.0** \- (Current) Added the lesson field to attach PDF files to questions. Both C++ and Python editors are now fully featured and in sync.
+* **2.0.0** \- Added the lesson field to attach PDF files to questions. Both C++ and Python editors are now fully featured and in sync.
+* **2.1.0** \- (Current) Well, I lied about feature being done, this one now has a live preview, using the same question rendering engine than the main app, for perfect live previewing - also fixed a nasty off-by-one deletion bug.
+
 
 ## **📄 License**
 

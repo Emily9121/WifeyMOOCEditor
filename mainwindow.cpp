@@ -23,11 +23,12 @@
 #include <QRandomGenerator> // For modern shuffling! ✨
 #include <algorithm>      // For std::shuffle!
 #include "helpers.h"
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), currentQuestionIndex(-1)
 {
-    setWindowTitle("💖 Wifey MOOC 2.0 Editor C++ Edition 💖");
+    setWindowTitle("💖 Wifey MOOC 2.1 Editor C++ Edition 💖");
     setMinimumSize(1200, 800);
     setupMainLayout();
     createActions();
@@ -86,6 +87,12 @@ MainWindow::MainWindow(QWidget *parent)
         connect(aiButton, &QPushButton::clicked, this, &MainWindow::showAiAssistantDialog);
     }
     // --- End AI Setup ---
+
+    // --- Add our new Live Preview button right next to the AI button! ---
+    m_mediaHandler = new MediaHandler(this); // 💖 ADD THIS LINE 💖
+    QPushButton *livePreviewButton = new QPushButton("🚀 Live Preview");
+    buttonLayout->insertWidget(2, livePreviewButton); // Put it after the AI button
+    connect(livePreviewButton, &QPushButton::clicked, this, &MainWindow::onLivePreview);
 
     showWelcomeMessage();
 }
@@ -406,8 +413,119 @@ QJsonObject MainWindow::transformAiQuestion(const QJsonObject &aiItem)
 }
 
 
-// --- All the original functions are below, untouched and perfect! ---
-// (No changes were made to any of the functions below this line)
+// AI end.
+
+void MainWindow::onLivePreview()
+{
+    if (currentQuestionIndex < 0 || !currentEditor) {
+        QMessageBox::information(this, "Oopsie!", "Please select a question to preview, darling!");
+        return;
+    }
+
+    BaseQuestionEditor *editor = qobject_cast<BaseQuestionEditor *>(currentEditor.get());
+    if (!editor) return;
+    QJsonObject questionJson = editor->getJson();
+
+    // Create our super cute preview dialog!
+    QDialog* previewDialog = new QDialog(this);
+    previewDialog->setWindowTitle("💖 Live Preview 💖");
+    previewDialog->setMinimumSize(600, 700);
+    previewDialog->setStyleSheet("QDialog { background-color: #FFEFD5; }");
+
+    QVBoxLayout *mainLayout = new QVBoxLayout(previewDialog);
+    QScrollArea *scrollArea = new QScrollArea(previewDialog);
+    scrollArea->setWidgetResizable(true);
+    QWidget *scrollWidget = new QWidget();
+    QVBoxLayout *previewLayout = new QVBoxLayout(scrollWidget);
+    scrollArea->setWidget(scrollWidget);
+    mainLayout->addWidget(scrollArea);
+
+    // --- Lesson PDF Link ---
+    if (questionJson.contains("lesson") && questionJson["lesson"].toObject().contains("pdf")) {
+        QString relativePdfPath = questionJson["lesson"].toObject()["pdf"].toString();
+        if (!relativePdfPath.isEmpty()) {
+            // Get the directory of the currently open JSON file
+            QDir jsonDir(QFileInfo(currentFilePath).absolutePath());
+            // Create the full, correct path to the PDF!
+            QString absolutePdfPath = jsonDir.absoluteFilePath(relativePdfPath);
+
+            QLabel* pdfLabel = new QLabel("📚 <b>Lesson PDF:</b> <a href=\"" + QUrl::fromLocalFile(absolutePdfPath).toString() + "\">" + QFileInfo(absolutePdfPath).fileName() + "</a>");
+            pdfLabel->setOpenExternalLinks(true); // So it opens in the default PDF viewer!
+            previewLayout->addWidget(pdfLabel);
+        }
+    }
+
+    // --- Title and Hint ---
+    QLabel* titleLabel = new QLabel(questionJson["question"].toString().replace("\n", "<br>"));
+    titleLabel->setWordWrap(true);
+    titleLabel->setStyleSheet("font-size: 16pt; font-weight: bold; color: #8B008B;");
+    previewLayout->addWidget(titleLabel);
+
+    if (questionJson.contains("hint") && !questionJson["hint"].toString().isEmpty()) {
+        QLabel* hintLabel = new QLabel("<i>Hint: " + questionJson["hint"].toString() + "</i>");
+        hintLabel->setWordWrap(true);
+        hintLabel->setStyleSheet("color: #C71585;");
+        previewLayout->addWidget(hintLabel);
+    }
+    previewLayout->addSpacing(15);
+
+    // --- Main Container for the Interactive Question ---
+    QWidget *questionWidgetContainer = new QWidget(scrollWidget);
+    previewLayout->addWidget(questionWidgetContainer);
+    previewLayout->addStretch();
+
+    // --- State for Image Tagging Alternatives ---
+    int* imageTaggingAltIndex = new int(0);
+
+    // --- The Magical Rendering Function! ---
+    auto renderQuestion = [=]() {
+        // Clear previous widget
+        if (questionWidgetContainer->layout()) {
+            QLayoutItem* item;
+            while ((item = questionWidgetContainer->layout()->takeAt(0)) != nullptr) {
+                delete item->widget();
+                delete item;
+            }
+            delete questionWidgetContainer->layout();
+        }
+
+        QVBoxLayout* containerLayout = new QVBoxLayout(questionWidgetContainer);
+        containerLayout->setContentsMargins(0, 0, 0, 0);
+
+        QuestionHandlers *previewHandler = new QuestionHandlers(questionWidgetContainer);
+        QWidget *questionWidget = new QWidget(questionWidgetContainer);
+
+        previewHandler->createQuestionWidget(
+            questionJson,
+            questionWidget,
+            QFileInfo(currentFilePath).absolutePath(),
+            m_mediaHandler,
+            *imageTaggingAltIndex // Pass the current alternative index!
+        );
+        containerLayout->addWidget(questionWidget);
+    };
+
+    // --- Alternative Button for Image Tagging ---
+    if (questionJson["type"].toString() == "image_tagging") {
+        QPushButton* altButton = new QPushButton("🌈 Alternative Version", previewDialog);
+        mainLayout->insertWidget(1, altButton); // Add it above the scroll area
+
+        connect(altButton, &QPushButton::clicked, [=]() {
+            int maxAlts = 1 + questionJson["alternatives"].toArray().size();
+            *imageTaggingAltIndex = (*imageTaggingAltIndex + 1) % maxAlts;
+            renderQuestion(); // Re-render with the new index!
+        });
+    }
+
+    // Initial render of the question
+    renderQuestion();
+
+    previewDialog->exec();
+    delete imageTaggingAltIndex; // Clean up our state variable
+    delete previewDialog;
+}
+
+// live preview end.
 
 void MainWindow::setupMainLayout()
 {
@@ -475,20 +593,26 @@ void MainWindow::refreshQuestionList()
 
 void MainWindow::onQuestionSelected(QListWidgetItem *item)
 {
-    if (!item || !questionListWidget) {
-        currentQuestionIndex = -1;
-        showWelcomeMessage();
-        return;
-    }
+    // First, save any changes from the previously selected question.
+    // This uses our class member 'currentQuestionIndex', which still holds the old index.
     saveCurrentQuestion();
-    int index = questionListWidget->row(item);
-    if (index < 0 || index >= allQuestions.size()) {
+
+    if (!item) {
         currentQuestionIndex = -1;
         showWelcomeMessage();
         return;
     }
-    currentQuestionIndex = index;
-    loadEditorForQuestion(allQuestions[index]);
+
+    int newlySelectedRow = questionListWidget->row(item);
+    if (newlySelectedRow < 0 || newlySelectedRow >= allQuestions.size()) {
+        currentQuestionIndex = -1;
+        showWelcomeMessage();
+        return;
+    }
+
+    // NOW we update our state to point to the new question.
+    currentQuestionIndex = newlySelectedRow;
+    loadEditorForQuestion(allQuestions[currentQuestionIndex]);
 }
 
 void MainWindow::saveCurrentQuestion()
@@ -573,23 +697,49 @@ void MainWindow::onAddQuestion()
     }
 }
 
+// TODO: Proper fix!
 void MainWindow::onDeleteQuestion()
 {
-    if (!questionListWidget) return;
-    int currentIndex = questionListWidget->currentRow();
-    if (currentIndex < 0 || allQuestions.isEmpty()) {
+    // 1. Get the row the user wants to delete DIRECTLY from the visual list.
+    const int rowToDelete = questionListWidget->currentRow();
+
+    qDebug() << "--- Delete Button Clicked ---";
+    qDebug() << "Visual row selected for deletion:" << rowToDelete;
+    qDebug() << "Index of the question currently in the editor:" << currentQuestionIndex;
+
+    // 2. Make sure a selection exists.
+    if (rowToDelete < 0) {
         QMessageBox::information(this, "Oops!", "Please select a question to delete, sweetie.");
         return;
     }
+
     if (QMessageBox::question(this, "Are you sure?", "💖 Are you sure you want to delete this adorable question? It can't be undone! 💖", QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) {
         return;
     }
-    allQuestions.removeAt(currentIndex);
+
+    // 3. Save any pending changes from the currently OPEN editor.
+    saveCurrentQuestion();
+
+    // 4. Remove the question from our master data list using the DIRECT row index.
+    allQuestions.removeAt(rowToDelete);
+
+    // 5. If the deleted question was the one being edited, or one before it,
+    // we must adjust the editor's index to prevent it from pointing to the wrong question later.
+    if (rowToDelete < currentQuestionIndex) {
+        currentQuestionIndex--;
+    } else if (rowToDelete == currentQuestionIndex) {
+        currentQuestionIndex = -1; // The edited question no longer exists.
+    }
+
+    // 6. Refresh the visual list from the now-correct data.
     refreshQuestionList();
+
+    // 7. Select the next logical item in the list.
     if (!allQuestions.isEmpty()) {
-        int newIndex = qMin(currentIndex, allQuestions.size() - 1);
-        questionListWidget->setCurrentRow(newIndex);
+        int newIndexToSelect = qMin(rowToDelete, allQuestions.size() - 1);
+        questionListWidget->setCurrentRow(newIndexToSelect);
     } else {
+        // If the list is now empty, just show the welcome message.
         showWelcomeMessage();
     }
 }
