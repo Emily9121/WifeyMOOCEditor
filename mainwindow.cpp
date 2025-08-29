@@ -235,7 +235,7 @@ void MainWindow::onAIGenerateClicked()
     payload["generationConfig"] = QJsonObject({{"response_mime_type", "application/json"}});
 
     // ✨ Using the correct model URL, just like in Python! ✨
-    QString url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=" + apiKey;
+    QString url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
     
     // 💖 The fix for the vexing parse! Using curly braces! 💖
     QNetworkRequest request{QUrl(url)};
